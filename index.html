@@ -393,6 +393,7 @@
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        letter-spacing: -0.02em;
       }
 
       .status-sub-value[hidden] {
@@ -1742,7 +1743,12 @@
 
       const LOVE_BASE_COST = 10n ** 68n;
 
-      const DAILY_CORE_MISSION_IDS = ["autoBulkOnce", "tapBulkOnce", "tap50", "tap100"];
+      const DAILY_CORE_MISSION_IDS = [
+        "autoBulkOnce",
+        "tapBulkOnce",
+        "tap50",
+        "tap100",
+      ];
 
       const SKILL_RESOURCE_NAME = "愛の結晶";
       const BASE_SKILL_MAX_LEVEL = 999;
@@ -2228,9 +2234,7 @@
       const themeSelect = document.getElementById("themeSelect");
       const characterNameInput = document.getElementById("characterNameInput");
       const saveCharacterNameButton = document.getElementById("saveCharacterNameButton");
-      const clearCharacterNameButton = document.getElementById(
-        "clearCharacterNameButton",
-      );
+      const clearCharacterNameButton = document.getElementById("clearCharacterNameButton");
       const changeCharacterImageButton = document.getElementById(
         "changeCharacterImageButton",
       );
@@ -2262,7 +2266,8 @@
           number,
           rank,
           name:
-            AUTO_ITEM_NAMES[index] || `自動アイテム ${String(number).padStart(3, "0")}`,
+            AUTO_ITEM_NAMES[index] ||
+            `自動アイテム ${String(number).padStart(3, "0")}`,
           unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
           baseCost: getAutoBaseCostByNumber(number),
           production: getAutoProductionByNumber(number),
@@ -2278,7 +2283,9 @@
           id: `tap_${number}`,
           number,
           rank,
-          name: TAP_ITEM_NAMES[index] || `タップ強化 ${String(number).padStart(3, "0")}`,
+          name:
+            TAP_ITEM_NAMES[index] ||
+            `タップ強化 ${String(number).padStart(3, "0")}`,
           unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
           baseCost: getTapBaseCostByNumber(number),
           tapBonus: getTapBonusByNumber(number),
@@ -2304,7 +2311,8 @@
         const ratio = (number - 1) / (MAX_SHOP_ITEMS - 1);
         const scaled =
           1 +
-          Math.pow(ratio, LEGACY_ITEM_SCALE_POWER) * (LEGACY_MAX_SHOP_ITEM_NUMBER - 1);
+          Math.pow(ratio, LEGACY_ITEM_SCALE_POWER) *
+            (LEGACY_MAX_SHOP_ITEM_NUMBER - 1);
 
         return Math.max(1, Math.round(scaled));
       }
@@ -2385,9 +2393,7 @@
       }
 
       function normalizeCharacterName(name) {
-        return String(name || "")
-          .trim()
-          .slice(0, CHARACTER_NAME_MAX_LENGTH);
+        return String(name || "").trim().slice(0, CHARACTER_NAME_MAX_LENGTH);
       }
 
       function syncCharacterNameDisplay() {
@@ -2573,6 +2579,15 @@
       function formatMultiplierFromPercent(percent) {
         const fixed = (percent / 100).toFixed(2).replace(/\.?0+$/, "");
         return `×${fixed}`;
+      }
+
+      function getAdaptiveStatusSubFontSize(text) {
+        const length = Array.from(String(text || "")).length;
+
+        if (length <= 12) return "10px";
+        if (length <= 15) return "9px";
+        if (length <= 18) return "8px";
+        return "7px";
       }
 
       function calculateGrowingCost(baseCost, count) {
@@ -2797,9 +2812,9 @@
 
       function getAutoTapBonus() {
         return (
-          (getAffectionPerSecond() * AUTO_TAP_BONUS_NUMERATOR) /
-          AUTO_TAP_BONUS_DENOMINATOR
-        );
+          getAffectionPerSecond() *
+          AUTO_TAP_BONUS_NUMERATOR
+        ) / AUTO_TAP_BONUS_DENOMINATOR;
       }
 
       function getTapCollectionBonus() {
@@ -2807,15 +2822,13 @@
         if (level <= 0) return 0n;
 
         return (
-          ((getTotalTapItemCountForBonus() / TAP_COLLECTION_ITEM_STEP) * BigInt(level)) /
-          TAP_COLLECTION_BONUS_DENOMINATOR
-        );
+          (getTotalTapItemCountForBonus() / TAP_COLLECTION_ITEM_STEP) *
+          BigInt(level)
+        ) / TAP_COLLECTION_BONUS_DENOMINATOR;
       }
 
       function getBaseTapMultiplierPercent() {
-        return (
-          100 + getSkillLevel("tapMultiplier") * TAP_RESEARCH_BONUS_PERCENT_PER_LEVEL
-        );
+        return 100 + getSkillLevel("tapMultiplier") * TAP_RESEARCH_BONUS_PERCENT_PER_LEVEL;
       }
 
       function getTapMultiplierPercent() {
@@ -2831,9 +2844,10 @@
         if (level <= 0 || state.affection <= 0n) return 0n;
 
         return (
-          (state.affection * BigInt(level) * SAVING_TAP_BONUS_NUMERATOR) /
-          SAVING_TAP_BONUS_DENOMINATOR
-        );
+          state.affection *
+          BigInt(level) *
+          SAVING_TAP_BONUS_NUMERATOR
+        ) / SAVING_TAP_BONUS_DENOMINATOR;
       }
 
       function getSavingTapBoostCap() {
@@ -3373,12 +3387,17 @@
         tapPowerEl.title = formatFullNumber(baseTapPower);
 
         if (savingTapLevel > 0) {
-          savingTapPowerEl.textContent = `${formatLargeNumber(savingTapPower)}`;
+          const savingTapPowerText = `愛の貯蓄込：${formatLargeNumber(savingTapPower)}`;
+
+          savingTapPowerEl.textContent = savingTapPowerText;
           savingTapPowerEl.title = formatFullNumber(savingTapPower);
+          savingTapPowerEl.style.fontSize =
+            getAdaptiveStatusSubFontSize(savingTapPowerText);
           savingTapPowerEl.hidden = false;
         } else {
           savingTapPowerEl.textContent = "";
           savingTapPowerEl.title = "";
+          savingTapPowerEl.style.fontSize = "";
           savingTapPowerEl.hidden = true;
         }
 
@@ -3438,7 +3457,8 @@
 
           const rewardSeconds = missionId === "allComplete" ? 43200 : 3600;
           const crystalReward = missionId === "allComplete" ? 3 : 1;
-          detail.textContent = `報酬：現在の自動増加 ${formatDuration(rewardSeconds)}ぶんのふぁぼ度 + 強化素材「${SKILL_RESOURCE_NAME}」${crystalReward}個`;
+          detail.textContent =
+            `報酬：現在の自動増加 ${formatDuration(rewardSeconds)}ぶんのふぁぼ度 + 強化素材「${SKILL_RESOURCE_NAME}」${crystalReward}個`;
 
           header.appendChild(name);
           header.appendChild(status);
@@ -3507,7 +3527,8 @@
         } else if (canBuy) {
           button.textContent = `${SKILL_RESOURCE_NAME} ${formatLargeNumber(cost)}個で強化`;
         } else {
-          button.textContent = `${SKILL_RESOURCE_NAME}不足：必要 ${formatLargeNumber(cost)}個`;
+          button.textContent =
+            `${SKILL_RESOURCE_NAME}不足：必要 ${formatLargeNumber(cost)}個`;
         }
 
         button.addEventListener("click", () => {
@@ -3539,7 +3560,9 @@
           skillListEl.appendChild(createSkillCard(skill));
         }
 
-        skillListEl.appendChild(createSkillCard(INFINITE_AUTO_SKILL, !infiniteUnlocked));
+        skillListEl.appendChild(
+          createSkillCard(INFINITE_AUTO_SKILL, !infiniteUnlocked),
+        );
       }
 
       function updateLoveArea() {
