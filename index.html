@@ -1,1399 +1,1417 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <title>好感度クリッカー</title>
-
-  <style>
-    * {
-      box-sizing: border-box;
-      -webkit-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f4efe8;
-      color: #2f2a26;
-      touch-action: manipulation;
-    }
-
-    button,
-    input,
-    textarea {
-      font: inherit;
-    }
-
-    input,
-    textarea {
-      -webkit-user-select: text;
-      user-select: text;
-      -webkit-touch-callout: default;
-    }
-
-    .app {
-      width: 100%;
-      max-width: 480px;
-      height: 100vh;
-      height: 100svh;
-      margin: 0 auto;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .touch-area {
-      height: 34svh;
-      min-height: 240px;
-      flex: 0 0 auto;
-      padding: 10px;
-      border-radius: 18px;
-      background: transparent;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .status {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      flex: 0 0 auto;
-    }
-
-    .status-card {
-      min-width: 0;
-      padding: 8px 4px;
-      border-radius: 12px;
-      background: #ffffff;
-      text-align: center;
-      overflow: hidden;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-    }
-
-    .status-label {
-      font-size: 10px;
-      color: #7c7067;
-      white-space: nowrap;
-    }
-
-    .status-value {
-      margin-top: 2px;
-      font-size: 17px;
-      font-weight: 800;
-      line-height: 1.1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .offline-notice {
-      display: none;
-      padding: 6px 10px;
-      border-radius: 999px;
-      background: #ffffff;
-      color: #7c5d42;
-      font-size: 11px;
-      font-weight: 700;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
-    }
-
-    .character-button {
-      flex: 1 1 auto;
-      width: 100%;
-      min-height: 0;
-      border: none;
-      border-radius: 16px;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      background: transparent;
-    }
-
-    .character-button:active {
-      transform: none;
-    }
-
-    .character-visual {
-      position: relative;
-      z-index: 1;
-      width: 100%;
-      height: 100%;
-      transform-origin: center bottom;
-      animation: characterIdleScale 2.4s ease-in-out infinite;
-    }
-
-    .character-bounce {
-      width: 100%;
-      height: 100%;
-      transform-origin: center bottom;
-    }
-
-    .character-bounce.is-bouncing {
-      animation: characterTapBounce 360ms cubic-bezier(0.2, 1.4, 0.4, 1);
-    }
-
-    .character-image {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      pointer-events: none;
-    }
-
-    .character-placeholder {
-      display: none;
-      width: 100%;
-      height: 100%;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      color: #9a8d82;
-      font-weight: 800;
-      letter-spacing: 0.08em;
-      pointer-events: none;
-    }
-
-    .tap-label {
-      position: absolute;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.85);
-      color: #7c5d42;
-      font-size: 12px;
-      font-weight: 700;
-      pointer-events: none;
-      white-space: nowrap;
-      z-index: 2;
-    }
-
-    .shop-area {
-      flex: 1 1 auto;
-      min-height: 0;
-      padding: 10px;
-      border-radius: 18px;
-      background: #ffffff;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .shop-header {
-      flex: 0 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      gap: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid #eee1d7;
-    }
-
-    .shop-title {
-      font-size: 18px;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .shop-info {
-      font-size: 11px;
-      color: #7c7067;
-      text-align: right;
-      line-height: 1.4;
-    }
-
-    .shop-tabs {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      padding: 8px 0;
-      flex: 0 0 auto;
-    }
-
-    .shop-tab {
-      border: none;
-      border-radius: 999px;
-      padding: 8px;
-      background: #eee4da;
-      color: #6e625b;
-      font-size: 13px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .shop-tab.is-active {
-      background: #7c5d42;
-      color: #ffffff;
-    }
-
-    .shop-list {
-      flex: 1 1 auto;
-      min-height: 0;
-      overflow-y: auto;
-      padding: 0 0 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .shop-item {
-      width: 100%;
-      border: none;
-      border-radius: 14px;
-      padding: 12px;
-      background: #fffaf3;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 10px;
-      align-items: center;
-      text-align: left;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-      cursor: pointer;
-    }
-
-    .shop-item:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
-
-    .item-name {
-      font-size: 14px;
-      font-weight: 800;
-    }
-
-    .item-detail {
-      margin-top: 4px;
-      font-size: 11px;
-      line-height: 1.45;
-      color: #7c7067;
-    }
-
-    .item-cost {
-      font-size: 13px;
-      font-weight: 800;
-      white-space: nowrap;
-      color: #7c5d42;
-    }
-
-    .empty-message {
-      padding: 16px;
-      border-radius: 14px;
-      background: #fffaf3;
-      color: #7c7067;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .tools-area {
-      flex: 0 0 auto;
-      display: grid;
-      gap: 6px;
-    }
-
-    .tool-panel {
-      border-radius: 14px;
-      background: #ffffff;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
-      overflow: hidden;
-    }
-
-    .tool-panel summary {
-      padding: 10px 12px;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .tool-content {
-      padding: 0 12px 12px;
-      display: grid;
-      gap: 8px;
-    }
-
-    .button-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .sub-button {
-      border: none;
-      border-radius: 12px;
-      padding: 10px;
-      background: #e8ddd3;
-      color: #2f2a26;
-      font-weight: 800;
-      cursor: pointer;
-    }
-
-    .sub-button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .danger-button {
-      background: #ead1d1;
-    }
-
-    .save-code {
-      width: 100%;
-      height: 72px;
-      padding: 8px;
-      border: 1px solid #e5d8ce;
-      border-radius: 10px;
-      resize: vertical;
-      font-size: 12px;
-    }
-
-    .text-input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #e5d8ce;
-      border-radius: 10px;
-      font-size: 14px;
-    }
-
-    .notice {
-      font-size: 12px;
-      line-height: 1.5;
-      color: #7c7067;
-    }
-
-    @keyframes characterIdleScale {
-      0% {
-        transform: scaleY(1) scaleX(1);
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
+    <title>好感度クリッカー</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
+        -webkit-tap-highlight-color: transparent;
       }
-
-      50% {
-        transform: scaleY(1.025) scaleX(0.995);
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        min-height: 100%;
+        font-family:
+          system-ui,
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        background: #f4efe8;
+        color: #2f2a26;
+        touch-action: manipulation;
+        overflow-x: hidden;
+        overflow-y: auto;
       }
-
-      100% {
-        transform: scaleY(1) scaleX(1);
+      button,
+      input,
+      textarea {
+        font: inherit;
       }
-    }
-
-    @keyframes characterTapBounce {
-      0% {
-        transform: scaleY(1) scaleX(1);
+      input,
+      textarea {
+        -webkit-user-select: text;
+        user-select: text;
+        -webkit-touch-callout: default;
       }
-
-      32% {
-        transform: scaleY(0.88) scaleX(1.08);
+      .app {
+        position: relative;
+        width: 100%;
+        max-width: 480px;
+        min-height: 100vh;
+        min-height: 100svh;
+        margin: 0 auto;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
       }
-
-      62% {
-        transform: scaleY(1.12) scaleX(0.94);
+      .reload-button {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        z-index: 50;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #7c5d42;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.14);
+        cursor: pointer;
       }
-
-      82% {
-        transform: scaleY(0.97) scaleX(1.02);
+      .reload-button:active {
+        transform: scale(0.94) rotate(18deg);
       }
-
-      100% {
-        transform: scaleY(1) scaleX(1);
+      .touch-area {
+        height: 34svh;
+        min-height: 280px;
+        flex: 0 0 auto;
+        padding: 10px;
+        border-radius: 18px;
+        background: transparent;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
-    }
-  </style>
-</head>
-
-<body>
-  <main class="app">
-    <section class="touch-area">
-      <div class="status">
-        <div class="status-card">
-          <div class="status-label">所持好感度</div>
-          <div id="affection" class="status-value">0</div>
-        </div>
-        <div class="status-card">
-          <div class="status-label">タップ増加</div>
-          <div id="tapPower" class="status-value">1</div>
-        </div>
-        <div class="status-card">
-          <div class="status-label">自動増加</div>
-          <div class="status-value">
-            <span id="perSecond">0</span>/秒
+      .status {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        flex: 0 0 auto;
+      }
+      .status-card {
+        min-width: 0;
+        padding: 8px 4px;
+        border-radius: 12px;
+        background: #ffffff;
+        text-align: center;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+      }
+      .status-label {
+        font-size: 10px;
+        color: #7c7067;
+        white-space: nowrap;
+      }
+      .status-value {
+        margin-top: 2px;
+        font-size: 17px;
+        font-weight: 800;
+        line-height: 1.1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .offline-notice {
+        display: none;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #ffffff;
+        color: #7c5d42;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+      }
+      .character-button {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+        border: none;
+        border-radius: 16px;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+        background: transparent;
+      }
+      .character-button:active {
+        transform: none;
+      }
+      .character-visual {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        transform-origin: center bottom;
+        animation: characterIdleScale 2.4s ease-in-out infinite;
+      }
+      .character-bounce {
+        width: 100%;
+        height: 100%;
+        transform-origin: center bottom;
+      }
+      .character-bounce.is-bouncing {
+        animation: characterTapBounce 360ms cubic-bezier(0.2, 1.4, 0.4, 1);
+      }
+      .character-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        display: block;
+        pointer-events: none;
+      }
+      .character-placeholder {
+        display: none;
+        width: 100%;
+        height: 100%;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #9a8d82;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        pointer-events: none;
+      }
+      .tap-label {
+        flex: 0 0 auto;
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.86);
+        color: #7c5d42;
+        font-weight: 800;
+        text-align: center;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+        line-height: 1.25;
+      }
+      .tap-label-main {
+        display: block;
+        font-size: 12px;
+      }
+      .tap-label-value {
+        display: block;
+        margin-top: 2px;
+        font-size: 17px;
+        font-weight: 900;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .shop-area {
+        height: 66svh;
+        min-height: 420px;
+        flex: 0 0 auto;
+        padding: 10px;
+        border-radius: 18px;
+        background: #ffffff;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        display: flex;
+        flex-direction: column;
+      }
+      .shop-header {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #eee1d7;
+      }
+      .shop-title {
+        font-size: 18px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .shop-info {
+        font-size: 11px;
+        color: #7c7067;
+        text-align: right;
+        line-height: 1.4;
+      }
+      .shop-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 8px 0;
+        flex: 0 0 auto;
+      }
+      .shop-tab {
+        border: none;
+        border-radius: 999px;
+        padding: 8px;
+        background: #eee4da;
+        color: #6e625b;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .shop-tab.is-active {
+        background: #7c5d42;
+        color: #ffffff;
+      }
+      .shop-list {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0 0 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+      .shop-item {
+        width: 100%;
+        border: none;
+        border-radius: 14px;
+        padding: 12px;
+        background: #fffaf3;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 10px;
+        align-items: center;
+        text-align: left;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        cursor: pointer;
+      }
+      .shop-item:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .item-name {
+        font-size: 14px;
+        font-weight: 800;
+      }
+      .item-detail {
+        margin-top: 4px;
+        font-size: 11px;
+        line-height: 1.45;
+        color: #7c7067;
+      }
+      .item-cost {
+        font-size: 13px;
+        font-weight: 800;
+        white-space: nowrap;
+        color: #7c5d42;
+      }
+      .empty-message {
+        padding: 16px;
+        border-radius: 14px;
+        background: #fffaf3;
+        color: #7c7067;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .love-area,
+      .achievement-area {
+        flex: 0 0 auto;
+        padding: 12px;
+        border-radius: 18px;
+        background: #fffdf8;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        display: grid;
+        gap: 10px;
+      }
+      .love-header,
+      .achievement-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .love-title,
+      .achievement-title {
+        font-size: 18px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .love-points,
+      .achievement-value {
+        min-width: 0;
+        font-size: 20px;
+        font-weight: 900;
+        color: #7c5d42;
+        text-align: right;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .love-detail,
+      .achievement-detail {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #7c7067;
+      }
+      .love-cost {
+        font-weight: 800;
+        color: #2f2a26;
+      }
+      .love-button {
+        width: 100%;
+        border: none;
+        border-radius: 14px;
+        padding: 12px;
+        background: #7c5d42;
+        color: #ffffff;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .love-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .tools-area {
+        flex: 0 0 auto;
+        display: grid;
+        gap: 6px;
+        padding-bottom: 24px;
+      }
+      .tool-panel {
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+        overflow: hidden;
+      }
+      .tool-panel summary {
+        padding: 10px 12px;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .tool-content {
+        padding: 0 12px 12px;
+        display: grid;
+        gap: 8px;
+      }
+      .button-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .sub-button {
+        border: none;
+        border-radius: 12px;
+        padding: 10px;
+        background: #e8ddd3;
+        color: #2f2a26;
+        font-weight: 800;
+        cursor: pointer;
+      }
+      .sub-button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+      .danger-button {
+        background: #ead1d1;
+      }
+      .save-code {
+        width: 100%;
+        height: 72px;
+        padding: 8px;
+        border: 1px solid #e5d8ce;
+        border-radius: 10px;
+        resize: vertical;
+        font-size: 12px;
+      }
+      .text-input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #e5d8ce;
+        border-radius: 10px;
+        font-size: 14px;
+      }
+      .notice {
+        font-size: 12px;
+        line-height: 1.5;
+        color: #7c7067;
+      }
+      @keyframes characterIdleScale {
+        0% {
+          transform: scaleY(1) scaleX(1);
+        }
+        50% {
+          transform: scaleY(1.025) scaleX(0.995);
+        }
+        100% {
+          transform: scaleY(1) scaleX(1);
+        }
+      }
+      @keyframes characterTapBounce {
+        0% {
+          transform: scaleY(1) scaleX(1);
+        }
+        32% {
+          transform: scaleY(0.88) scaleX(1.08);
+        }
+        62% {
+          transform: scaleY(1.12) scaleX(0.94);
+        }
+        82% {
+          transform: scaleY(0.97) scaleX(1.02);
+        }
+        100% {
+          transform: scaleY(1) scaleX(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <button
+        id="reloadButton"
+        class="reload-button"
+        type="button"
+        aria-label="サイトを更新"
+      >
+        ↻
+      </button>
+      <section class="touch-area">
+        <div class="status">
+          <div class="status-card">
+            <div class="status-label">所持好感度</div>
+            <div id="affection" class="status-value">0</div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">タップ増加</div>
+            <div id="tapPower" class="status-value">1</div>
+          </div>
+          <div class="status-card">
+            <div class="status-label">自動増加</div>
+            <div class="status-value"><span id="perSecond">0</span>/秒</div>
           </div>
         </div>
-      </div>
-
-      <div id="offlineNotice" class="offline-notice"></div>
-
-      <button id="characterButton" class="character-button" type="button" aria-label="キャラクターをなでる">
-        <div id="characterVisual" class="character-visual">
-          <div id="characterBounce" class="character-bounce">
-            <img id="characterImage" class="character-image" src="assets/chara.png" alt="キャラクター" />
-            <div id="characterPlaceholder" class="character-placeholder">
-              CHARACTER<br />
-              assets/chara.png
+        <div id="offlineNotice" class="offline-notice"></div>
+        <button
+          id="characterButton"
+          class="character-button"
+          type="button"
+          aria-label="キャラクターをなでる"
+        >
+          <div id="characterVisual" class="character-visual">
+            <div id="characterBounce" class="character-bounce">
+              <img
+                id="characterImage"
+                class="character-image"
+                src="assets/chara.png"
+                alt="キャラクター"
+              />
+              <div id="characterPlaceholder" class="character-placeholder">
+                CHARACTER<br />
+                assets/chara.png
+              </div>
             </div>
           </div>
+        </button>
+        <div id="tapLabel" class="tap-label">
+          <span class="tap-label-main">タップでなでる</span>
+          <span id="tapGainLabel" class="tap-label-value">+1</span>
         </div>
-
-        <div id="tapLabel" class="tap-label">タップでなでる +1</div>
-      </button>
-    </section>
-
-    <section class="shop-area">
-      <div class="shop-header">
-        <div class="shop-title">ショップ</div>
-        <div id="shopInfo" class="shop-info"></div>
-      </div>
-
-      <div class="shop-tabs">
-        <button id="autoShopTab" class="shop-tab is-active" type="button">自動増加</button>
-        <button id="tapShopTab" class="shop-tab" type="button">タップ強化</button>
-      </div>
-
-      <div id="shopList" class="shop-list"></div>
-    </section>
-
-    <section class="tools-area">
-      <details class="tool-panel">
-        <summary>表示設定</summary>
-        <div class="tool-content">
-          <div class="button-grid">
-            <button id="changeCharacterImageButton" class="sub-button" type="button">キャラ画像を選択</button>
-            <button id="resetCharacterImageButton" class="sub-button" type="button">初期画像に戻す</button>
-          </div>
-
-          <div class="notice">
-            選択した画像は、この端末のブラウザ内に保存されます。
-            セーブコードには画像データは含まれません。
-          </div>
-
-          <input id="characterImageInput" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+      </section>
+      <section class="shop-area">
+        <div class="shop-header">
+          <div class="shop-title">ショップ</div>
+          <div id="shopInfo" class="shop-info"></div>
         </div>
-      </details>
-
-      <details class="tool-panel">
-        <summary>セーブ</summary>
-        <div class="tool-content">
-          <div class="button-grid">
-            <button id="downloadSaveButton" class="sub-button" type="button">ファイル保存</button>
-            <button id="generateCodeButton" class="sub-button" type="button">コード生成</button>
-          </div>
-
-          <textarea id="saveCodeOutput" class="save-code" readonly placeholder="セーブコードがここに表示されます"></textarea>
-
-          <button id="copyCodeButton" class="sub-button" type="button">コードをコピー</button>
-        </div>
-      </details>
-
-      <details class="tool-panel">
-        <summary>ロード</summary>
-        <div class="tool-content">
-          <button id="loadFileButton" class="sub-button" type="button">ファイルからロード</button>
-
-          <textarea id="saveCodeInput" class="save-code" placeholder="セーブコードをここに貼り付け"></textarea>
-
-          <button id="loadCodeButton" class="sub-button" type="button">コードからロード</button>
-
-          <input id="saveFileInput" type="file" accept="application/json,.json" hidden />
-        </div>
-      </details>
-
-      <details class="tool-panel">
-        <summary>データ管理</summary>
-        <div class="tool-content">
-          <div class="notice">
-            リセットする場合は、下の入力欄に <strong>RESET</strong> と入力してください。
-            現在の進行データは消えます。
-          </div>
-
-          <input id="resetConfirmInput" class="text-input" type="text" placeholder="RESET と入力" />
-
-          <button id="resetButton" class="sub-button danger-button" type="button" disabled>
-            データリセット
+        <div class="shop-tabs">
+          <button id="autoShopTab" class="shop-tab is-active" type="button">
+            自動増加
           </button>
+          <button id="tapShopTab" class="shop-tab" type="button">タップ強化</button>
         </div>
-      </details>
-    </section>
-  </main>
-
-  <script>
-    const SAVE_KEY = "affection_clicker_save_v2";
-    const CHARACTER_IMAGE_KEY = "affection_clicker_character_image_v1";
-
-    const DEFAULT_CHARACTER_IMAGE_SRC = "assets/chara.png";
-
-    const MAX_SHOP_ITEMS = 999;
-    const ITEMS_PER_RANK = 20;
-    const TAP_AUTO_FLOOR_RATE = 0.25;
-    const OFFLINE_PROGRESS_MAX_SECONDS = 48 * 60 * 60;
-
-    const CHARACTER_IMAGE_MAX_SIZE = 1200;
-    const CHARACTER_IMAGE_QUALITY = 0.9;
-
-    const LARGE_UNITS = [
-      "",
-      "万",
-      "億",
-      "兆",
-      "京",
-      "垓",
-      "秭",
-      "穣",
-      "溝",
-      "澗",
-      "正",
-      "載",
-      "極",
-      "恒河沙",
-      "阿僧祇",
-      "那由他",
-      "不可思議",
-      "無量大数"
-    ];
-
-    const affectionEl = document.getElementById("affection");
-    const tapPowerEl = document.getElementById("tapPower");
-    const perSecondEl = document.getElementById("perSecond");
-    const characterButton = document.getElementById("characterButton");
-    const characterImageEl = document.getElementById("characterImage");
-    const characterPlaceholderEl = document.getElementById("characterPlaceholder");
-    const characterBounceEl = document.getElementById("characterBounce");
-    const tapLabelEl = document.getElementById("tapLabel");
-    const offlineNoticeEl = document.getElementById("offlineNotice");
-
-    const shopListEl = document.getElementById("shopList");
-    const shopInfoEl = document.getElementById("shopInfo");
-    const autoShopTab = document.getElementById("autoShopTab");
-    const tapShopTab = document.getElementById("tapShopTab");
-
-    const changeCharacterImageButton = document.getElementById("changeCharacterImageButton");
-    const resetCharacterImageButton = document.getElementById("resetCharacterImageButton");
-    const characterImageInput = document.getElementById("characterImageInput");
-
-    const downloadSaveButton = document.getElementById("downloadSaveButton");
-    const generateCodeButton = document.getElementById("generateCodeButton");
-    const copyCodeButton = document.getElementById("copyCodeButton");
-    const saveCodeOutputEl = document.getElementById("saveCodeOutput");
-
-    const loadFileButton = document.getElementById("loadFileButton");
-    const saveFileInput = document.getElementById("saveFileInput");
-    const saveCodeInputEl = document.getElementById("saveCodeInput");
-    const loadCodeButton = document.getElementById("loadCodeButton");
-
-    const resetConfirmInput = document.getElementById("resetConfirmInput");
-    const resetButton = document.getElementById("resetButton");
-
-    const normalFormatter = new Intl.NumberFormat("ja-JP", {
-      maximumFractionDigits: 0
-    });
-
-    const autoItems = Array.from({ length: MAX_SHOP_ITEMS }, (_, index) => {
-      const number = index + 1;
-      const rank = Math.floor((number - 1) / ITEMS_PER_RANK) + 1;
-
-      return {
-        type: "auto",
-        id: `auto_${number}`,
-        number,
-        rank,
-        name: `ダミー自動アイテム ${String(number).padStart(3, "0")}`,
-        unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
-        baseCost: Math.floor(8 + Math.pow(number, 1.28) * 7),
-        production: Math.floor((number * (number + 1)) / 2)
-      };
-    });
-
-    const tapItems = Array.from({ length: MAX_SHOP_ITEMS }, (_, index) => {
-      const number = index + 1;
-      const rank = Math.floor((number - 1) / ITEMS_PER_RANK) + 1;
-
-      return {
-        type: "tap",
-        id: `tap_${number}`,
-        number,
-        rank,
-        name: `ダミータップ強化 ${String(number).padStart(3, "0")}`,
-        unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
-        baseCost: Math.floor(25 + Math.pow(number, 1.35) * 12),
-        tapBonus: Math.floor((number * (number + 1)) + Math.pow(number, 1.2))
-      };
-    });
-
-    const validAutoItemIds = new Set(autoItems.map((item) => item.id));
-    const validTapItemIds = new Set(tapItems.map((item) => item.id));
-
-    let state = createDefaultState();
-    let activeShopType = "auto";
-    let renderedShopType = "";
-    let renderedUnlockedCount = -1;
-    let saveTimer = null;
-
-    const itemElements = new Map();
-
-    function createDefaultState() {
-      return {
-        version: 2,
-        affection: 0,
-        totalAffection: 0,
-        bestAffection: 0,
-        autoItemCounts: {},
-        tapItemCounts: {},
-        lastSavedAt: Date.now()
-      };
-    }
-
-    function clampNumber(value) {
-      if (!Number.isFinite(value)) {
-        return Number.MAX_VALUE;
+        <div id="shopList" class="shop-list"></div>
+      </section>
+      <section class="love-area">
+        <div class="love-header">
+          <div class="love-title">愛情ポイント</div>
+          <div id="lovePoints" class="love-points">0</div>
+        </div>
+        <div class="love-detail">
+          好感度を捧げると、愛情ポイントが1増えます。愛情ポイントは累積するだけのエンドコンテンツで、ショップ・タップ・自動増加には影響しません。<br />
+          次に必要な好感度：<span id="loveCost" class="love-cost">1無量大数</span>
+        </div>
+        <button id="loveOfferButton" class="love-button" type="button">
+          好感度を捧げる
+        </button>
+      </section>
+      <section class="achievement-area">
+        <div class="achievement-header">
+          <div class="achievement-title">実績</div>
+          <div id="tapCount" class="achievement-value">0</div>
+        </div>
+        <div class="achievement-detail">
+          今までキャラクターをなでた回数です。既存セーブデータでは、このコード実装後から累積されます。
+        </div>
+      </section>
+      <section class="tools-area">
+        <details class="tool-panel">
+          <summary>表示設定</summary>
+          <div class="tool-content">
+            <div class="button-grid">
+              <button id="changeCharacterImageButton" class="sub-button" type="button">
+                キャラ画像を選択
+              </button>
+              <button id="resetCharacterImageButton" class="sub-button" type="button">
+                初期画像に戻す
+              </button>
+            </div>
+            <div class="notice">
+              選択した画像は、この端末のブラウザ内に保存されます。
+              セーブコードには画像データは含まれません。
+            </div>
+            <input
+              id="characterImageInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+            />
+          </div>
+        </details>
+        <details class="tool-panel">
+          <summary>セーブ</summary>
+          <div class="tool-content">
+            <div class="button-grid">
+              <button id="downloadSaveButton" class="sub-button" type="button">
+                ファイル保存
+              </button>
+              <button id="generateCodeButton" class="sub-button" type="button">
+                コード生成
+              </button>
+            </div>
+            <textarea
+              id="saveCodeOutput"
+              class="save-code"
+              readonly
+              placeholder="セーブコードがここに表示されます"
+            ></textarea>
+            <button id="copyCodeButton" class="sub-button" type="button">
+              コードをコピー
+            </button>
+          </div>
+        </details>
+        <details class="tool-panel">
+          <summary>ロード</summary>
+          <div class="tool-content">
+            <button id="loadFileButton" class="sub-button" type="button">
+              ファイルからロード
+            </button>
+            <textarea
+              id="saveCodeInput"
+              class="save-code"
+              placeholder="セーブコードをここに貼り付け"
+            ></textarea>
+            <button id="loadCodeButton" class="sub-button" type="button">
+              コードからロード
+            </button>
+            <input
+              id="saveFileInput"
+              type="file"
+              accept="application/json,.json"
+              hidden
+            />
+          </div>
+        </details>
+        <details class="tool-panel">
+          <summary>データ管理</summary>
+          <div class="tool-content">
+            <div class="notice">
+              リセットする場合は、下の入力欄に <strong>RESET</strong> と入力してください。
+              現在の進行データは消えます。
+            </div>
+            <input
+              id="resetConfirmInput"
+              class="text-input"
+              type="text"
+              placeholder="RESET と入力"
+            />
+            <button
+              id="resetButton"
+              class="sub-button danger-button"
+              type="button"
+              disabled
+            >
+              データリセット
+            </button>
+          </div>
+        </details>
+      </section>
+    </main>
+    <script>
+      const SAVE_KEY = "affection_clicker_save_v4";
+      const OLD_SAVE_KEYS = [
+        "affection_clicker_save_v3",
+        "affection_clicker_save_v2",
+        "affection_clicker_save_v1",
+      ];
+      const CHARACTER_IMAGE_KEY = "affection_clicker_character_image_v1";
+      const DEFAULT_CHARACTER_IMAGE_SRC = "assets/chara.png";
+      const MAX_SHOP_ITEMS = 999;
+      const ITEMS_PER_RANK = 20;
+      const TAP_AUTO_FLOOR_NUMERATOR = 25n;
+      const TAP_AUTO_FLOOR_DENOMINATOR = 100n;
+      const OFFLINE_PROGRESS_MAX_SECONDS = 48 * 60 * 60;
+      const OFFLINE_NOTICE_VISIBLE_MS = 10000;
+      const CHARACTER_IMAGE_MAX_SIZE = 1200;
+      const CHARACTER_IMAGE_QUALITY = 0.9;
+      const LOVE_BASE_COST = 10n ** 68n;
+      const LARGE_UNITS = [
+        "",
+        "万",
+        "億",
+        "兆",
+        "京",
+        "垓",
+        "秭",
+        "穣",
+        "溝",
+        "澗",
+        "正",
+        "載",
+        "極",
+        "恒河沙",
+        "阿僧祇",
+        "那由他",
+        "不可思議",
+        "無量大数",
+      ];
+      const reloadButton = document.getElementById("reloadButton");
+      const affectionEl = document.getElementById("affection");
+      const tapPowerEl = document.getElementById("tapPower");
+      const perSecondEl = document.getElementById("perSecond");
+      const characterButton = document.getElementById("characterButton");
+      const characterImageEl = document.getElementById("characterImage");
+      const characterPlaceholderEl = document.getElementById("characterPlaceholder");
+      const characterBounceEl = document.getElementById("characterBounce");
+      const tapGainLabelEl = document.getElementById("tapGainLabel");
+      const offlineNoticeEl = document.getElementById("offlineNotice");
+      const shopListEl = document.getElementById("shopList");
+      const shopInfoEl = document.getElementById("shopInfo");
+      const autoShopTab = document.getElementById("autoShopTab");
+      const tapShopTab = document.getElementById("tapShopTab");
+      const lovePointsEl = document.getElementById("lovePoints");
+      const loveCostEl = document.getElementById("loveCost");
+      const loveOfferButton = document.getElementById("loveOfferButton");
+      const tapCountEl = document.getElementById("tapCount");
+      const changeCharacterImageButton = document.getElementById(
+        "changeCharacterImageButton",
+      );
+      const resetCharacterImageButton = document.getElementById(
+        "resetCharacterImageButton",
+      );
+      const characterImageInput = document.getElementById("characterImageInput");
+      const downloadSaveButton = document.getElementById("downloadSaveButton");
+      const generateCodeButton = document.getElementById("generateCodeButton");
+      const copyCodeButton = document.getElementById("copyCodeButton");
+      const saveCodeOutputEl = document.getElementById("saveCodeOutput");
+      const loadFileButton = document.getElementById("loadFileButton");
+      const saveFileInput = document.getElementById("saveFileInput");
+      const saveCodeInputEl = document.getElementById("saveCodeInput");
+      const loadCodeButton = document.getElementById("loadCodeButton");
+      const resetConfirmInput = document.getElementById("resetConfirmInput");
+      const resetButton = document.getElementById("resetButton");
+      const autoItems = Array.from({ length: MAX_SHOP_ITEMS }, (_, index) => {
+        const number = index + 1;
+        const rank = Math.floor((number - 1) / ITEMS_PER_RANK) + 1;
+        return {
+          type: "auto",
+          id: `auto_${number}`,
+          number,
+          rank,
+          name: `ダミー自動アイテム ${String(number).padStart(3, "0")}`,
+          unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
+          baseCost: Math.floor(8 + Math.pow(number, 1.28) * 7),
+          production: Math.floor((number * (number + 1)) / 2),
+        };
+      });
+      const tapItems = Array.from({ length: MAX_SHOP_ITEMS }, (_, index) => {
+        const number = index + 1;
+        const rank = Math.floor((number - 1) / ITEMS_PER_RANK) + 1;
+        return {
+          type: "tap",
+          id: `tap_${number}`,
+          number,
+          rank,
+          name: `ダミータップ強化 ${String(number).padStart(3, "0")}`,
+          unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
+          baseCost: Math.floor(25 + Math.pow(number, 1.35) * 12),
+          tapBonus: Math.floor(number * (number + 1) + Math.pow(number, 1.2)),
+        };
+      });
+      const validAutoItemIds = new Set(autoItems.map((item) => item.id));
+      const validTapItemIds = new Set(tapItems.map((item) => item.id));
+      let state = createDefaultState();
+      let activeShopType = "auto";
+      let renderedShopType = "";
+      let renderedUnlockedCount = -1;
+      let saveTimer = null;
+      let offlineNoticeTimer = null;
+      const itemElements = new Map();
+      function createDefaultState() {
+        return {
+          version: 4,
+          affection: 0n,
+          totalAffection: 0n,
+          bestAffection: 0n,
+          lovePoints: 0n,
+          tapCount: 0n,
+          autoItemCounts: {},
+          tapItemCounts: {},
+          lastSavedAt: Date.now(),
+        };
       }
-
-      return Math.max(0, value);
-    }
-
-    function getOverflowSuffix(number) {
-      const letters = "abcdefghijklmnopqrstuvwxyz";
-
-      if (number <= 0) {
-        return "";
+      function parseBigIntValue(value) {
+        if (typeof value === "bigint") {
+          return value >= 0n ? value : 0n;
+        }
+        if (typeof value === "number") {
+          if (!Number.isFinite(value)) return 0n;
+          return BigInt(Math.max(0, Math.floor(value)));
+        }
+        if (typeof value === "string") {
+          const trimmed = value.trim();
+          if (/^\d+$/.test(trimmed)) {
+            return BigInt(trimmed);
+          }
+          const numberValue = Number(trimmed);
+          if (Number.isFinite(numberValue)) {
+            return BigInt(Math.max(0, Math.floor(numberValue)));
+          }
+        }
+        return 0n;
       }
-
-      let result = "";
-      let rest = number;
-
-      while (rest > 26) {
-        result += "z";
-        rest -= 26;
+      function parseCountValue(value) {
+        const count = Math.floor(Number(value) || 0);
+        return Math.max(0, count);
       }
-
-      return result + letters[rest - 1];
-    }
-
-    function formatLargeNumber(value) {
-      if (!Number.isFinite(value)) {
-        return "上限超過";
+      function maxBigInt(a, b) {
+        return a >= b ? a : b;
       }
-
-      const sign = value < 0 ? "-" : "";
-      const absValue = Math.abs(value);
-
-      if (absValue < 10000) {
-        return sign + normalFormatter.format(Math.floor(absValue));
+      function ceilDiv(a, b) {
+        return (a + b - 1n) / b;
       }
-
-      const exponent = Math.floor(Math.log10(absValue));
-      const unitIndex = Math.floor(exponent / 4);
-      const basePower = unitIndex * 4;
-      const scaledValue = absValue / Math.pow(10, basePower);
-
-      let unitName = LARGE_UNITS[unitIndex];
-
-      if (!unitName) {
-        const overIndex = unitIndex - (LARGE_UNITS.length - 1);
-        unitName = `無量大数${getOverflowSuffix(overIndex)}`;
+      function getOverflowSuffix(number) {
+        const letters = "abcdefghijklmnopqrstuvwxyz";
+        if (number <= 0) {
+          return "";
+        }
+        let result = "";
+        let rest = number;
+        while (rest > 26) {
+          result += "z";
+          rest -= 26;
+        }
+        return result + letters[rest - 1];
       }
-
-      const decimals =
-        scaledValue >= 100 ? 0 :
-        scaledValue >= 10 ? 1 :
-        2;
-
-      const displayValue = scaledValue
-        .toFixed(decimals)
-        .replace(/\.?0+$/, "");
-
-      return `${sign}${displayValue}${unitName}`;
-    }
-
-    function formatDuration(seconds) {
-      const cappedSeconds = Math.max(0, Math.floor(seconds));
-      const hours = Math.floor(cappedSeconds / 3600);
-      const minutes = Math.floor((cappedSeconds % 3600) / 60);
-
-      if (hours > 0) {
-        return `${hours}時間${minutes}分`;
+      function formatLargeNumber(value) {
+        const bigValue = parseBigIntValue(value);
+        if (bigValue < 10000n) {
+          return bigValue.toLocaleString("ja-JP");
+        }
+        const raw = bigValue.toString();
+        const unitIndex = Math.floor((raw.length - 1) / 4);
+        const baseDigits = raw.length - unitIndex * 4;
+        let unitName = LARGE_UNITS[unitIndex];
+        if (!unitName) {
+          const overIndex = unitIndex - (LARGE_UNITS.length - 1);
+          unitName = `無量大数${getOverflowSuffix(overIndex)}`;
+        }
+        const integerPart = raw.slice(0, baseDigits);
+        const decimalSource = raw.slice(baseDigits, baseDigits + 2);
+        let decimalLength = 0;
+        if (integerPart.length === 1) {
+          decimalLength = 2;
+        } else if (integerPart.length === 2) {
+          decimalLength = 1;
+        }
+        let decimalPart = decimalSource.slice(0, decimalLength).replace(/0+$/, "");
+        const displayValue = decimalPart ? `${integerPart}.${decimalPart}` : integerPart;
+        return `${displayValue}${unitName}`;
       }
-
-      if (minutes > 0) {
-        return `${minutes}分`;
+      function formatFullNumber(value) {
+        return parseBigIntValue(value).toString();
       }
-
-      return `${cappedSeconds}秒`;
-    }
-
-    function setCharacterImage(src) {
-      characterImageEl.style.display = "block";
-      characterPlaceholderEl.style.display = "none";
-      characterImageEl.src = src;
-    }
-
-    function showCharacterPlaceholder() {
-      characterImageEl.style.display = "none";
-      characterPlaceholderEl.style.display = "flex";
-    }
-
-    function loadSavedCharacterImage() {
-      const savedImage = localStorage.getItem(CHARACTER_IMAGE_KEY);
-
-      if (savedImage) {
-        setCharacterImage(savedImage);
-      } else {
-        setCharacterImage(DEFAULT_CHARACTER_IMAGE_SRC);
+      function formatDuration(seconds) {
+        const cappedSeconds = Math.max(0, Math.floor(seconds));
+        const hours = Math.floor(cappedSeconds / 3600);
+        const minutes = Math.floor((cappedSeconds % 3600) / 60);
+        if (hours > 0) {
+          return `${hours}時間${minutes}分`;
+        }
+        if (minutes > 0) {
+          return `${minutes}分`;
+        }
+        return `${cappedSeconds}秒`;
       }
-    }
-
-    function resizeImageFileToDataUrl(file) {
-      return new Promise((resolve, reject) => {
-        if (!file || !file.type.startsWith("image/")) {
-          reject(new Error("画像ファイルを選択してください。"));
+      function calculateGrowingCost(baseCost, count) {
+        let cost = BigInt(baseCost);
+        for (let i = 0; i < count; i++) {
+          cost = ceilDiv(cost * 115n, 100n);
+        }
+        return cost;
+      }
+      function getLoveOfferCost() {
+        return LOVE_BASE_COST * 2n ** state.lovePoints;
+      }
+      function setCharacterImage(src) {
+        characterImageEl.style.display = "block";
+        characterPlaceholderEl.style.display = "none";
+        characterImageEl.src = src;
+      }
+      function showCharacterPlaceholder() {
+        characterImageEl.style.display = "none";
+        characterPlaceholderEl.style.display = "flex";
+      }
+      function loadSavedCharacterImage() {
+        const savedImage = localStorage.getItem(CHARACTER_IMAGE_KEY);
+        if (savedImage) {
+          setCharacterImage(savedImage);
+        } else {
+          setCharacterImage(DEFAULT_CHARACTER_IMAGE_SRC);
+        }
+      }
+      function resizeImageFileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+          if (!file || !file.type.startsWith("image/")) {
+            reject(new Error("画像ファイルを選択してください。"));
+            return;
+          }
+          const objectUrl = URL.createObjectURL(file);
+          const image = new Image();
+          image.onload = () => {
+            const width = image.naturalWidth;
+            const height = image.naturalHeight;
+            const scale = Math.min(1, CHARACTER_IMAGE_MAX_SIZE / Math.max(width, height));
+            const canvas = document.createElement("canvas");
+            canvas.width = Math.max(1, Math.round(width * scale));
+            canvas.height = Math.max(1, Math.round(height * scale));
+            const context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            context.drawImage(image, 0, 0, canvas.width, canvas.height);
+            URL.revokeObjectURL(objectUrl);
+            try {
+              const dataUrl = canvas.toDataURL("image/webp", CHARACTER_IMAGE_QUALITY);
+              resolve(dataUrl);
+            } catch (error) {
+              reject(error);
+            }
+          };
+          image.onerror = () => {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error("画像を読み込めませんでした。"));
+          };
+          image.src = objectUrl;
+        });
+      }
+      function getItemsByType(type) {
+        return type === "tap" ? tapItems : autoItems;
+      }
+      function getCountsByType(type) {
+        return type === "tap" ? state.tapItemCounts : state.autoItemCounts;
+      }
+      function getItemCount(item) {
+        const counts = getCountsByType(item.type);
+        return counts[item.id] || 0;
+      }
+      function setItemCount(item, count) {
+        const counts = getCountsByType(item.type);
+        counts[item.id] = count;
+      }
+      function getItemCost(item) {
+        const count = getItemCount(item);
+        return calculateGrowingCost(item.baseCost, count);
+      }
+      function getAffectionPerSecond() {
+        return autoItems.reduce((total, item) => {
+          return total + BigInt(getItemCount(item)) * BigInt(item.production);
+        }, 0n);
+      }
+      function getRawTapPower() {
+        return tapItems.reduce((total, item) => {
+          return total + BigInt(getItemCount(item)) * BigInt(item.tapBonus);
+        }, 1n);
+      }
+      function getEffectiveTapPower() {
+        const rawTapPower = getRawTapPower();
+        const autoBasedFloor = ceilDiv(
+          getAffectionPerSecond() * TAP_AUTO_FLOOR_NUMERATOR,
+          TAP_AUTO_FLOOR_DENOMINATOR,
+        );
+        return maxBigInt(1n, maxBigInt(rawTapPower, autoBasedFloor));
+      }
+      function addAffection(amount) {
+        const addValue = parseBigIntValue(amount);
+        state.affection += addValue;
+        state.totalAffection += addValue;
+        state.bestAffection = maxBigInt(state.bestAffection, state.affection);
+        updateAll();
+        queueSave();
+      }
+      function buyItem(item) {
+        const cost = getItemCost(item);
+        if (state.affection < cost) return;
+        state.affection -= cost;
+        setItemCount(item, getItemCount(item) + 1);
+        updateAll();
+        saveLocal();
+      }
+      function offerLovePoint() {
+        const cost = getLoveOfferCost();
+        if (state.affection < cost) return;
+        state.affection -= cost;
+        state.lovePoints += 1n;
+        updateAll();
+        saveLocal();
+      }
+      function getUnlockedCount(items) {
+        let count = 0;
+        while (
+          count < items.length &&
+          BigInt(items[count].unlockAt) <= state.bestAffection
+        ) {
+          count++;
+        }
+        return count;
+      }
+      function getActiveUnlockedCount() {
+        return getUnlockedCount(getItemsByType(activeShopType));
+      }
+      function createShopItemElement(item) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "shop-item";
+        const left = document.createElement("div");
+        const nameEl = document.createElement("div");
+        nameEl.className = "item-name";
+        const detailEl = document.createElement("div");
+        detailEl.className = "item-detail";
+        const costEl = document.createElement("div");
+        costEl.className = "item-cost";
+        left.appendChild(nameEl);
+        left.appendChild(detailEl);
+        button.appendChild(left);
+        button.appendChild(costEl);
+        button.addEventListener("click", () => {
+          buyItem(item);
+        });
+        shopListEl.appendChild(button);
+        itemElements.set(item.id, { button, nameEl, detailEl, costEl });
+        updateShopItem(item);
+      }
+      function renderShopList() {
+        const items = getItemsByType(activeShopType);
+        const unlockedCount = getActiveUnlockedCount();
+        itemElements.clear();
+        shopListEl.innerHTML = "";
+        if (unlockedCount <= 0) {
+          const nextItem = items[0];
+          const message = document.createElement("div");
+          message.className = "empty-message";
+          message.textContent = `まだアイテムが解放されていません。最高所持好感度が ${formatLargeNumber(nextItem.unlockAt)} になると表示されます。`;
+          shopListEl.appendChild(message);
+        } else {
+          for (let i = 0; i < unlockedCount; i++) {
+            createShopItemElement(items[i]);
+          }
+        }
+        renderedShopType = activeShopType;
+        renderedUnlockedCount = unlockedCount;
+      }
+      function syncShopList() {
+        const unlockedCount = getActiveUnlockedCount();
+        if (
+          renderedShopType !== activeShopType ||
+          renderedUnlockedCount !== unlockedCount
+        ) {
+          renderShopList();
           return;
         }
-
-        const objectUrl = URL.createObjectURL(file);
-        const image = new Image();
-
-        image.onload = () => {
-          const width = image.naturalWidth;
-          const height = image.naturalHeight;
-
-          const scale = Math.min(
-            1,
-            CHARACTER_IMAGE_MAX_SIZE / Math.max(width, height)
-          );
-
-          const canvas = document.createElement("canvas");
-          canvas.width = Math.max(1, Math.round(width * scale));
-          canvas.height = Math.max(1, Math.round(height * scale));
-
-          const context = canvas.getContext("2d");
-          context.clearRect(0, 0, canvas.width, canvas.height);
-          context.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-          URL.revokeObjectURL(objectUrl);
-
-          try {
-            const dataUrl = canvas.toDataURL("image/webp", CHARACTER_IMAGE_QUALITY);
-            resolve(dataUrl);
-          } catch (error) {
-            reject(error);
-          }
-        };
-
-        image.onerror = () => {
-          URL.revokeObjectURL(objectUrl);
-          reject(new Error("画像を読み込めませんでした。"));
-        };
-
-        image.src = objectUrl;
-      });
-    }
-
-    function getItemsByType(type) {
-      return type === "tap" ? tapItems : autoItems;
-    }
-
-    function getCountsByType(type) {
-      return type === "tap" ? state.tapItemCounts : state.autoItemCounts;
-    }
-
-    function getItemCount(item) {
-      const counts = getCountsByType(item.type);
-      return counts[item.id] || 0;
-    }
-
-    function setItemCount(item, count) {
-      const counts = getCountsByType(item.type);
-      counts[item.id] = count;
-    }
-
-    function getItemCost(item) {
-      const count = getItemCount(item);
-      const cost = item.baseCost * Math.pow(1.15, count);
-
-      if (!Number.isFinite(cost)) {
-        return Number.MAX_VALUE;
-      }
-
-      return Math.floor(cost);
-    }
-
-    function getAffectionPerSecond() {
-      const perSecond = autoItems.reduce((total, item) => {
-        return total + getItemCount(item) * item.production;
-      }, 0);
-
-      return clampNumber(perSecond);
-    }
-
-    function getRawTapPower() {
-      const power = tapItems.reduce((total, item) => {
-        return total + getItemCount(item) * item.tapBonus;
-      }, 1);
-
-      return clampNumber(power);
-    }
-
-    function getEffectiveTapPower() {
-      const rawTapPower = getRawTapPower();
-      const autoBasedFloor = Math.ceil(getAffectionPerSecond() * TAP_AUTO_FLOOR_RATE);
-
-      return Math.max(1, rawTapPower, autoBasedFloor);
-    }
-
-    function addAffection(amount) {
-      const addValue = Number(amount) || 0;
-
-      state.affection = clampNumber(state.affection + addValue);
-      state.totalAffection = clampNumber(state.totalAffection + addValue);
-      state.bestAffection = Math.max(state.bestAffection, state.affection);
-
-      updateAll();
-      queueSave();
-    }
-
-    function buyItem(item) {
-      const cost = getItemCost(item);
-      if (state.affection < cost) return;
-
-      state.affection = clampNumber(state.affection - cost);
-      setItemCount(item, getItemCount(item) + 1);
-
-      updateAll();
-      saveLocal();
-    }
-
-    function getUnlockedCount(items) {
-      let count = 0;
-
-      while (
-        count < items.length &&
-        items[count].unlockAt <= state.bestAffection
-      ) {
-        count++;
-      }
-
-      return count;
-    }
-
-    function getActiveUnlockedCount() {
-      return getUnlockedCount(getItemsByType(activeShopType));
-    }
-
-    function createShopItemElement(item) {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "shop-item";
-
-      const left = document.createElement("div");
-
-      const nameEl = document.createElement("div");
-      nameEl.className = "item-name";
-
-      const detailEl = document.createElement("div");
-      detailEl.className = "item-detail";
-
-      const costEl = document.createElement("div");
-      costEl.className = "item-cost";
-
-      left.appendChild(nameEl);
-      left.appendChild(detailEl);
-      button.appendChild(left);
-      button.appendChild(costEl);
-
-      button.addEventListener("click", () => {
-        buyItem(item);
-      });
-
-      shopListEl.appendChild(button);
-
-      itemElements.set(item.id, {
-        button,
-        nameEl,
-        detailEl,
-        costEl
-      });
-
-      updateShopItem(item);
-    }
-
-    function renderShopList() {
-      const items = getItemsByType(activeShopType);
-      const unlockedCount = getActiveUnlockedCount();
-
-      itemElements.clear();
-      shopListEl.innerHTML = "";
-
-      if (unlockedCount <= 0) {
-        const nextItem = items[0];
-        const message = document.createElement("div");
-        message.className = "empty-message";
-        message.textContent =
-          `まだアイテムが解放されていません。最高所持好感度が ${formatLargeNumber(nextItem.unlockAt)} になると表示されます。`;
-        shopListEl.appendChild(message);
-      } else {
+        const items = getItemsByType(activeShopType);
         for (let i = 0; i < unlockedCount; i++) {
-          createShopItemElement(items[i]);
+          updateShopItem(items[i]);
         }
       }
-
-      renderedShopType = activeShopType;
-      renderedUnlockedCount = unlockedCount;
-    }
-
-    function syncShopList() {
-      const unlockedCount = getActiveUnlockedCount();
-
-      if (
-        renderedShopType !== activeShopType ||
-        renderedUnlockedCount !== unlockedCount
-      ) {
-        renderShopList();
-        return;
+      function updateShopItem(item) {
+        const elements = itemElements.get(item.id);
+        if (!elements) return;
+        const count = getItemCount(item);
+        const cost = getItemCost(item);
+        elements.nameEl.textContent = item.name;
+        if (item.type === "auto") {
+          elements.detailEl.textContent = `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / 自動好感度 +${formatLargeNumber(item.production)}/秒`;
+        } else {
+          elements.detailEl.textContent = `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / タップ好感度 +${formatLargeNumber(item.tapBonus)}`;
+        }
+        elements.costEl.textContent = `${formatLargeNumber(cost)} 好感度`;
+        elements.button.disabled = state.affection < cost;
       }
-
-      const items = getItemsByType(activeShopType);
-
-      for (let i = 0; i < unlockedCount; i++) {
-        updateShopItem(items[i]);
+      function updateStats() {
+        const tapPower = getEffectiveTapPower();
+        const perSecond = getAffectionPerSecond();
+        affectionEl.textContent = formatLargeNumber(state.affection);
+        affectionEl.title = formatFullNumber(state.affection);
+        tapPowerEl.textContent = formatLargeNumber(tapPower);
+        perSecondEl.textContent = formatLargeNumber(perSecond);
+        tapGainLabelEl.textContent = `+${formatLargeNumber(tapPower)}`;
+        const items = getItemsByType(activeShopType);
+        const unlockedCount = getActiveUnlockedCount();
+        const nextItem = items[unlockedCount];
+        const nextUnlockText = nextItem
+          ? `次: ${formatLargeNumber(nextItem.unlockAt)} 好感度`
+          : "全解放済み";
+        const shopName = activeShopType === "tap" ? "タップ強化" : "自動増加";
+        shopInfoEl.innerHTML =
+          `${shopName}: ${unlockedCount}/${MAX_SHOP_ITEMS}<br>` +
+          `最高所持: ${formatLargeNumber(state.bestAffection)} / ${nextUnlockText}`;
       }
-    }
-
-    function updateShopItem(item) {
-      const elements = itemElements.get(item.id);
-      if (!elements) return;
-
-      const count = getItemCount(item);
-      const cost = getItemCost(item);
-
-      elements.nameEl.textContent = item.name;
-
-      if (item.type === "auto") {
-        elements.detailEl.textContent =
-          `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / 自動好感度 +${formatLargeNumber(item.production)}/秒`;
-      } else {
-        elements.detailEl.textContent =
-          `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / タップ好感度 +${formatLargeNumber(item.tapBonus)}`;
+      function updateLoveArea() {
+        const loveCost = getLoveOfferCost();
+        lovePointsEl.textContent = formatLargeNumber(state.lovePoints);
+        lovePointsEl.title = formatFullNumber(state.lovePoints);
+        loveCostEl.textContent = `${formatLargeNumber(loveCost)} 好感度`;
+        loveCostEl.title = formatFullNumber(loveCost);
+        loveOfferButton.disabled = state.affection < loveCost;
+        loveOfferButton.textContent =
+          state.affection >= loveCost
+            ? "好感度を捧げる（愛情 +1）"
+            : "好感度が足りません";
       }
-
-      elements.costEl.textContent = `${formatLargeNumber(cost)} 好感度`;
-      elements.button.disabled = state.affection < cost;
-    }
-
-    function updateStats() {
-      const tapPower = getEffectiveTapPower();
-      const perSecond = getAffectionPerSecond();
-
-      affectionEl.textContent = formatLargeNumber(state.affection);
-      affectionEl.title = Number.isFinite(state.affection)
-        ? normalFormatter.format(Math.floor(state.affection))
-        : "";
-
-      tapPowerEl.textContent = formatLargeNumber(tapPower);
-      perSecondEl.textContent = formatLargeNumber(perSecond);
-      tapLabelEl.textContent = `タップでなでる +${formatLargeNumber(tapPower)}`;
-
-      const items = getItemsByType(activeShopType);
-      const unlockedCount = getActiveUnlockedCount();
-      const nextItem = items[unlockedCount];
-
-      const nextUnlockText = nextItem
-        ? `次: ${formatLargeNumber(nextItem.unlockAt)} 好感度`
-        : "全解放済み";
-
-      const shopName = activeShopType === "tap" ? "タップ強化" : "自動増加";
-
-      shopInfoEl.innerHTML =
-        `${shopName}: ${unlockedCount}/${MAX_SHOP_ITEMS}<br>` +
-        `最高所持: ${formatLargeNumber(state.bestAffection)} / ${nextUnlockText}`;
-    }
-
-    function updateShopTabs() {
-      autoShopTab.classList.toggle("is-active", activeShopType === "auto");
-      tapShopTab.classList.toggle("is-active", activeShopType === "tap");
-    }
-
-    function updateAll() {
-      updateShopTabs();
-      updateStats();
-      syncShopList();
-    }
-
-    function showOfflineNotice(result) {
-      if (!result || result.gain <= 0) {
+      function updateAchievementArea() {
+        tapCountEl.textContent = formatLargeNumber(state.tapCount);
+        tapCountEl.title = formatFullNumber(state.tapCount);
+      }
+      function updateShopTabs() {
+        autoShopTab.classList.toggle("is-active", activeShopType === "auto");
+        tapShopTab.classList.toggle("is-active", activeShopType === "tap");
+      }
+      function updateAll() {
+        updateShopTabs();
+        updateStats();
+        updateLoveArea();
+        updateAchievementArea();
+        syncShopList();
+      }
+      function hideOfflineNotice() {
+        if (offlineNoticeTimer) {
+          clearTimeout(offlineNoticeTimer);
+          offlineNoticeTimer = null;
+        }
         offlineNoticeEl.style.display = "none";
         offlineNoticeEl.textContent = "";
-        return;
       }
-
-      const cappedText = result.wasCapped ? " / 上限48時間" : "";
-      offlineNoticeEl.textContent =
-        `留守中 ${formatDuration(result.appliedSeconds)} 分の好感度 +${formatLargeNumber(result.gain)}${cappedText}`;
-      offlineNoticeEl.style.display = "block";
-    }
-
-    function applyOfflineProgress() {
-      const now = Date.now();
-      const lastSavedAt = Number(state.lastSavedAt) || now;
-      const elapsedSeconds = Math.max(0, Math.floor((now - lastSavedAt) / 1000));
-      const appliedSeconds = Math.min(elapsedSeconds, OFFLINE_PROGRESS_MAX_SECONDS);
-      const wasCapped = elapsedSeconds > OFFLINE_PROGRESS_MAX_SECONDS;
-
-      if (appliedSeconds <= 0) {
+      function showOfflineNotice(result) {
+        if (!result || result.gain <= 0n) {
+          hideOfflineNotice();
+          return;
+        }
+        if (offlineNoticeTimer) {
+          clearTimeout(offlineNoticeTimer);
+        }
+        const cappedText = result.wasCapped ? " / 上限48時間" : "";
+        offlineNoticeEl.textContent = `留守中 ${formatDuration(result.appliedSeconds)} 分の好感度 +${formatLargeNumber(result.gain)}${cappedText}`;
+        offlineNoticeEl.style.display = "block";
+        offlineNoticeTimer = setTimeout(() => {
+          hideOfflineNotice();
+        }, OFFLINE_NOTICE_VISIBLE_MS);
+      }
+      function applyOfflineProgress() {
+        const now = Date.now();
+        const lastSavedAt = Number(state.lastSavedAt) || now;
+        const elapsedSeconds = Math.max(0, Math.floor((now - lastSavedAt) / 1000));
+        const appliedSeconds = Math.min(elapsedSeconds, OFFLINE_PROGRESS_MAX_SECONDS);
+        const wasCapped = elapsedSeconds > OFFLINE_PROGRESS_MAX_SECONDS;
+        if (appliedSeconds <= 0) {
+          return { elapsedSeconds, appliedSeconds: 0, gain: 0n, wasCapped };
+        }
+        const perSecond = getAffectionPerSecond();
+        if (perSecond <= 0n) {
+          return { elapsedSeconds, appliedSeconds, gain: 0n, wasCapped };
+        }
+        const gain = perSecond * BigInt(appliedSeconds);
+        state.affection += gain;
+        state.totalAffection += gain;
+        state.bestAffection = maxBigInt(state.bestAffection, state.affection);
+        return { elapsedSeconds, appliedSeconds, gain, wasCapped };
+      }
+      function queueSave() {
+        if (saveTimer) return;
+        saveTimer = setTimeout(() => {
+          saveLocal();
+          saveTimer = null;
+        }, 1000);
+      }
+      function serializeState() {
         return {
-          elapsedSeconds,
-          appliedSeconds: 0,
-          gain: 0,
-          wasCapped
+          version: 4,
+          affection: state.affection.toString(),
+          totalAffection: state.totalAffection.toString(),
+          bestAffection: state.bestAffection.toString(),
+          lovePoints: state.lovePoints.toString(),
+          tapCount: state.tapCount.toString(),
+          autoItemCounts: state.autoItemCounts,
+          tapItemCounts: state.tapItemCounts,
+          lastSavedAt: state.lastSavedAt,
         };
       }
-
-      const perSecond = getAffectionPerSecond();
-
-      if (perSecond <= 0) {
-        return {
-          elapsedSeconds,
-          appliedSeconds,
-          gain: 0,
-          wasCapped
-        };
+      function saveLocal() {
+        state.lastSavedAt = Date.now();
+        localStorage.setItem(SAVE_KEY, JSON.stringify(serializeState()));
       }
-
-      const gain = clampNumber(perSecond * appliedSeconds);
-
-      state.affection = clampNumber(state.affection + gain);
-      state.totalAffection = clampNumber(state.totalAffection + gain);
-      state.bestAffection = Math.max(state.bestAffection, state.affection);
-
-      return {
-        elapsedSeconds,
-        appliedSeconds,
-        gain,
-        wasCapped
-      };
-    }
-
-    function queueSave() {
-      if (saveTimer) return;
-
-      saveTimer = setTimeout(() => {
-        saveLocal();
-        saveTimer = null;
-      }, 1000);
-    }
-
-    function saveLocal() {
-      state.lastSavedAt = Date.now();
-      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-    }
-
-    function loadLocal() {
-      const rawDataV2 = localStorage.getItem(SAVE_KEY);
-      const rawDataV1 = localStorage.getItem("affection_clicker_save_v1");
-      const rawData = rawDataV2 || rawDataV1;
-
-      if (!rawData) return;
-
-      try {
-        const data = JSON.parse(rawData);
-        applySaveData(data, false);
-      } catch (error) {
-        console.warn("自動保存データの読み込みに失敗しました。", error);
-      }
-    }
-
-    function createExportData() {
-      return {
-        ...state,
-        exportedAt: new Date().toISOString()
-      };
-    }
-
-    function sanitizeSaveData(data) {
-      if (!data || typeof data !== "object") {
-        throw new Error("セーブデータの形式が正しくありません。");
-      }
-
-      const cleanData = createDefaultState();
-
-      cleanData.version = 2;
-      cleanData.affection = clampNumber(Number(data.affection) || 0);
-      cleanData.totalAffection = clampNumber(Number(data.totalAffection) || 0);
-      cleanData.bestAffection = Math.max(
-        cleanData.affection,
-        clampNumber(Number(data.bestAffection) || 0)
-      );
-      cleanData.lastSavedAt = Number(data.lastSavedAt) || Date.now();
-
-      cleanData.autoItemCounts = {};
-      cleanData.tapItemCounts = {};
-
-      const autoSourceCounts = data.autoItemCounts || data.itemCounts || {};
-      const tapSourceCounts = data.tapItemCounts || {};
-
-      if (autoSourceCounts && typeof autoSourceCounts === "object") {
-        for (const [id, count] of Object.entries(autoSourceCounts)) {
-          if (validAutoItemIds.has(id)) {
-            cleanData.autoItemCounts[id] = Math.max(0, Math.floor(Number(count) || 0));
+      function loadLocal() {
+        let rawData = localStorage.getItem(SAVE_KEY);
+        if (!rawData) {
+          for (const key of OLD_SAVE_KEYS) {
+            rawData = localStorage.getItem(key);
+            if (rawData) break;
           }
-
-          const oldIdMatch = id.match(/^item_(\d+)$/);
-          if (oldIdMatch) {
-            const convertedId = `auto_${Number(oldIdMatch[1])}`;
-            if (validAutoItemIds.has(convertedId)) {
-              cleanData.autoItemCounts[convertedId] = Math.max(0, Math.floor(Number(count) || 0));
+        }
+        if (!rawData) return;
+        try {
+          const data = JSON.parse(rawData);
+          applySaveData(data, false);
+        } catch (error) {
+          console.warn("自動保存データの読み込みに失敗しました。", error);
+        }
+      }
+      function createExportData() {
+        return { ...serializeState(), exportedAt: new Date().toISOString() };
+      }
+      function sanitizeSaveData(data) {
+        if (!data || typeof data !== "object") {
+          throw new Error("セーブデータの形式が正しくありません。");
+        }
+        const cleanData = createDefaultState();
+        cleanData.version = 4;
+        cleanData.affection = parseBigIntValue(data.affection);
+        cleanData.totalAffection = parseBigIntValue(data.totalAffection);
+        cleanData.bestAffection = maxBigInt(
+          cleanData.affection,
+          parseBigIntValue(data.bestAffection),
+        );
+        cleanData.lovePoints = parseBigIntValue(data.lovePoints);
+        cleanData.tapCount = parseBigIntValue(data.tapCount);
+        cleanData.lastSavedAt = Number(data.lastSavedAt) || Date.now();
+        cleanData.autoItemCounts = {};
+        cleanData.tapItemCounts = {};
+        const autoSourceCounts = data.autoItemCounts || data.itemCounts || {};
+        const tapSourceCounts = data.tapItemCounts || {};
+        if (autoSourceCounts && typeof autoSourceCounts === "object") {
+          for (const [id, count] of Object.entries(autoSourceCounts)) {
+            if (validAutoItemIds.has(id)) {
+              cleanData.autoItemCounts[id] = parseCountValue(count);
+            }
+            const oldIdMatch = id.match(/^item_(\d+)$/);
+            if (oldIdMatch) {
+              const convertedId = `auto_${Number(oldIdMatch[1])}`;
+              if (validAutoItemIds.has(convertedId)) {
+                cleanData.autoItemCounts[convertedId] = parseCountValue(count);
+              }
             }
           }
         }
+        if (tapSourceCounts && typeof tapSourceCounts === "object") {
+          for (const [id, count] of Object.entries(tapSourceCounts)) {
+            if (!validTapItemIds.has(id)) continue;
+            cleanData.tapItemCounts[id] = parseCountValue(count);
+          }
+        }
+        return cleanData;
       }
-
-      if (tapSourceCounts && typeof tapSourceCounts === "object") {
-        for (const [id, count] of Object.entries(tapSourceCounts)) {
-          if (!validTapItemIds.has(id)) continue;
-          cleanData.tapItemCounts[id] = Math.max(0, Math.floor(Number(count) || 0));
+      function resetShopDom() {
+        renderedShopType = "";
+        renderedUnlockedCount = -1;
+        itemElements.clear();
+        shopListEl.innerHTML = "";
+      }
+      function applySaveData(data, shouldSave = true) {
+        state = sanitizeSaveData(data);
+        resetShopDom();
+        updateAll();
+        if (shouldSave) {
+          saveLocal();
         }
       }
-
-      return cleanData;
-    }
-
-    function resetShopDom() {
-      renderedShopType = "";
-      renderedUnlockedCount = -1;
-      itemElements.clear();
-      shopListEl.innerHTML = "";
-    }
-
-    function applySaveData(data, shouldSave = true) {
-      state = sanitizeSaveData(data);
-      resetShopDom();
-      updateAll();
-
-      if (shouldSave) {
+      function downloadSaveFile() {
         saveLocal();
+        const json = JSON.stringify(createExportData(), null, 2);
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const now = new Date();
+        const fileName =
+          "affection-save-" +
+          now.getFullYear() +
+          String(now.getMonth() + 1).padStart(2, "0") +
+          String(now.getDate()).padStart(2, "0") +
+          "-" +
+          String(now.getHours()).padStart(2, "0") +
+          String(now.getMinutes()).padStart(2, "0") +
+          ".json";
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = fileName;
+        link.click();
+        URL.revokeObjectURL(url);
       }
-    }
-
-    function downloadSaveFile() {
-      saveLocal();
-
-      const json = JSON.stringify(createExportData(), null, 2);
-      const blob = new Blob([json], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-
-      const now = new Date();
-      const fileName =
-        "affection-save-" +
-        now.getFullYear() +
-        String(now.getMonth() + 1).padStart(2, "0") +
-        String(now.getDate()).padStart(2, "0") +
-        "-" +
-        String(now.getHours()).padStart(2, "0") +
-        String(now.getMinutes()).padStart(2, "0") +
-        ".json";
-
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = fileName;
-      link.click();
-
-      URL.revokeObjectURL(url);
-    }
-
-    function loadFromText(text) {
-      const data = JSON.parse(text);
-
-      if (!confirm("現在のデータを上書きしてロードします。よろしいですか？")) {
-        return;
+      function loadFromText(text) {
+        const data = JSON.parse(text);
+        if (!confirm("現在のデータを上書きしてロードします。よろしいですか？")) {
+          return;
+        }
+        applySaveData(data, true);
+        alert("ロードしました。");
       }
-
-      applySaveData(data, true);
-      alert("ロードしました。");
-    }
-
-    characterImageEl.addEventListener("load", () => {
-      characterImageEl.style.display = "block";
-      characterPlaceholderEl.style.display = "none";
-    });
-
-    characterImageEl.addEventListener("error", () => {
-      showCharacterPlaceholder();
-    });
-
-    changeCharacterImageButton.addEventListener("click", () => {
-      characterImageInput.click();
-    });
-
-    characterImageInput.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      try {
-        const dataUrl = await resizeImageFileToDataUrl(file);
-        localStorage.setItem(CHARACTER_IMAGE_KEY, dataUrl);
-        setCharacterImage(dataUrl);
-        alert("キャラ画像を変更しました。");
-      } catch (error) {
-        console.error(error);
-        alert("キャラ画像を変更できませんでした。画像サイズを小さくして再度試してください。");
-      } finally {
-        characterImageInput.value = "";
-      }
-    });
-
-    resetCharacterImageButton.addEventListener("click", () => {
-      localStorage.removeItem(CHARACTER_IMAGE_KEY);
-      setCharacterImage(DEFAULT_CHARACTER_IMAGE_SRC);
-      alert("初期画像に戻しました。");
-    });
-
-    characterButton.addEventListener("click", () => {
-      characterBounceEl.classList.remove("is-bouncing");
-      void characterBounceEl.offsetWidth;
-      characterBounceEl.classList.add("is-bouncing");
-
-      addAffection(getEffectiveTapPower());
-      saveLocal();
-    });
-
-    characterBounceEl.addEventListener("animationend", () => {
-      characterBounceEl.classList.remove("is-bouncing");
-    });
-
-    autoShopTab.addEventListener("click", () => {
-      activeShopType = "auto";
-      updateAll();
-    });
-
-    tapShopTab.addEventListener("click", () => {
-      activeShopType = "tap";
-      updateAll();
-    });
-
-    downloadSaveButton.addEventListener("click", () => {
-      downloadSaveFile();
-    });
-
-    generateCodeButton.addEventListener("click", () => {
-      saveLocal();
-      saveCodeOutputEl.value = JSON.stringify(createExportData());
-      saveCodeOutputEl.select();
-    });
-
-    copyCodeButton.addEventListener("click", async () => {
-      const code = saveCodeOutputEl.value.trim();
-
-      if (!code) {
-        alert("先にセーブコードを生成してください。");
-        return;
-      }
-
-      try {
-        await navigator.clipboard.writeText(code);
-        alert("コピーしました。");
-      } catch (error) {
-        saveCodeOutputEl.select();
-        alert("自動コピーできませんでした。表示されたコードを手動でコピーしてください。");
-      }
-    });
-
-    loadFileButton.addEventListener("click", () => {
-      saveFileInput.click();
-    });
-
-    saveFileInput.addEventListener("change", (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-
-      reader.onload = () => {
+      reloadButton.addEventListener("click", () => {
+        saveLocal();
+        window.location.reload();
+      });
+      characterImageEl.addEventListener("load", () => {
+        characterImageEl.style.display = "block";
+        characterPlaceholderEl.style.display = "none";
+      });
+      characterImageEl.addEventListener("error", () => {
+        showCharacterPlaceholder();
+      });
+      changeCharacterImageButton.addEventListener("click", () => {
+        characterImageInput.click();
+      });
+      characterImageInput.addEventListener("change", async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
         try {
-          loadFromText(String(reader.result));
+          const dataUrl = await resizeImageFileToDataUrl(file);
+          localStorage.setItem(CHARACTER_IMAGE_KEY, dataUrl);
+          setCharacterImage(dataUrl);
+          alert("キャラ画像を変更しました。");
         } catch (error) {
-          alert("セーブファイルを読み込めませんでした。");
           console.error(error);
+          alert(
+            "キャラ画像を変更できませんでした。画像サイズを小さくして再度試してください。",
+          );
         } finally {
-          saveFileInput.value = "";
+          characterImageInput.value = "";
         }
-      };
-
-      reader.readAsText(file);
-    });
-
-    loadCodeButton.addEventListener("click", () => {
-      const text = saveCodeInputEl.value.trim();
-
-      if (!text) {
-        alert("セーブコードを貼り付けてください。");
-        return;
-      }
-
-      try {
-        loadFromText(text);
-      } catch (error) {
-        alert("セーブコードを読み込めませんでした。");
-        console.error(error);
-      }
-    });
-
-    resetConfirmInput.addEventListener("input", () => {
-      resetButton.disabled = resetConfirmInput.value !== "RESET";
-    });
-
-    resetButton.addEventListener("click", () => {
-      if (resetConfirmInput.value !== "RESET") {
-        return;
-      }
-
-      if (!confirm("すべての進行データをリセットします。よろしいですか？")) {
-        return;
-      }
-
-      state = createDefaultState();
-      resetShopDom();
-      updateAll();
-      saveLocal();
-
-      resetConfirmInput.value = "";
-      resetButton.disabled = true;
-      offlineNoticeEl.style.display = "none";
-      offlineNoticeEl.textContent = "";
-    });
-
-    setInterval(() => {
-      const perSecond = getAffectionPerSecond();
-      if (perSecond <= 0) return;
-
-      addAffection(perSecond);
-    }, 1000);
-
-    window.addEventListener("beforeunload", () => {
-      saveLocal();
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") {
+      });
+      resetCharacterImageButton.addEventListener("click", () => {
+        localStorage.removeItem(CHARACTER_IMAGE_KEY);
+        setCharacterImage(DEFAULT_CHARACTER_IMAGE_SRC);
+        alert("初期画像に戻しました。");
+      });
+      characterButton.addEventListener("click", () => {
+        characterBounceEl.classList.remove("is-bouncing");
+        void characterBounceEl.offsetWidth;
+        characterBounceEl.classList.add("is-bouncing");
+        state.tapCount += 1n;
+        addAffection(getEffectiveTapPower());
         saveLocal();
-      }
-    });
-
-    loadSavedCharacterImage();
-    loadLocal();
-
-    const offlineResult = applyOfflineProgress();
-
-    updateAll();
-    showOfflineNotice(offlineResult);
-    saveLocal();
-  </script>
-</body>
+      });
+      characterBounceEl.addEventListener("animationend", () => {
+        characterBounceEl.classList.remove("is-bouncing");
+      });
+      autoShopTab.addEventListener("click", () => {
+        activeShopType = "auto";
+        updateAll();
+      });
+      tapShopTab.addEventListener("click", () => {
+        activeShopType = "tap";
+        updateAll();
+      });
+      loveOfferButton.addEventListener("click", () => {
+        offerLovePoint();
+      });
+      downloadSaveButton.addEventListener("click", () => {
+        downloadSaveFile();
+      });
+      generateCodeButton.addEventListener("click", () => {
+        saveLocal();
+        saveCodeOutputEl.value = JSON.stringify(createExportData());
+        saveCodeOutputEl.select();
+      });
+      copyCodeButton.addEventListener("click", async () => {
+        const code = saveCodeOutputEl.value.trim();
+        if (!code) {
+          alert("先にセーブコードを生成してください。");
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(code);
+          alert("コピーしました。");
+        } catch (error) {
+          saveCodeOutputEl.select();
+          alert(
+            "自動コピーできませんでした。表示されたコードを手動でコピーしてください。",
+          );
+        }
+      });
+      loadFileButton.addEventListener("click", () => {
+        saveFileInput.click();
+      });
+      saveFileInput.addEventListener("change", (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            loadFromText(String(reader.result));
+          } catch (error) {
+            alert("セーブファイルを読み込めませんでした。");
+            console.error(error);
+          } finally {
+            saveFileInput.value = "";
+          }
+        };
+        reader.readAsText(file);
+      });
+      loadCodeButton.addEventListener("click", () => {
+        const text = saveCodeInputEl.value.trim();
+        if (!text) {
+          alert("セーブコードを貼り付けてください。");
+          return;
+        }
+        try {
+          loadFromText(text);
+        } catch (error) {
+          alert("セーブコードを読み込めませんでした。");
+          console.error(error);
+        }
+      });
+      resetConfirmInput.addEventListener("input", () => {
+        resetButton.disabled = resetConfirmInput.value !== "RESET";
+      });
+      resetButton.addEventListener("click", () => {
+        if (resetConfirmInput.value !== "RESET") {
+          return;
+        }
+        if (!confirm("すべての進行データをリセットします。よろしいですか？")) {
+          return;
+        }
+        state = createDefaultState();
+        resetShopDom();
+        updateAll();
+        saveLocal();
+        resetConfirmInput.value = "";
+        resetButton.disabled = true;
+        hideOfflineNotice();
+      });
+      setInterval(() => {
+        const perSecond = getAffectionPerSecond();
+        if (perSecond <= 0n) return;
+        addAffection(perSecond);
+      }, 1000);
+      window.addEventListener("beforeunload", () => {
+        saveLocal();
+      });
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") {
+          saveLocal();
+        }
+      });
+      loadSavedCharacterImage();
+      loadLocal();
+      const offlineResult = applyOfflineProgress();
+      updateAll();
+      showOfflineNotice(offlineResult);
+      saveLocal();
+    </script>
+  </body>
 </html>
