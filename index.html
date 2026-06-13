@@ -9,7 +9,19 @@
       name="viewport"
       content="width=device-width, initial-scale=1.0, user-scalable=no"
     />
+
     <title>好感度クリッカー</title>
+
+    <meta name="theme-color" content="#f4efe8" />
+    <meta name="apple-mobile-web-app-title" content="好感度クリッカー" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <link rel="icon" href="./favicon.ico?v=1" sizes="any" />
+    <link rel="icon" type="image/png" href="./favicon-32.png?v=1" sizes="32x32" />
+    <link rel="icon" type="image/png" href="./favicon-192.png?v=1" sizes="192x192" />
+    <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=1" />
 
     <style>
       :root {
@@ -1260,6 +1272,7 @@
       const THEME_MAP = Object.fromEntries(THEMES.map((theme) => [theme.id, theme]));
 
       const reloadButton = document.getElementById("reloadButton");
+      const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
       const affectionEl = document.getElementById("affection");
       const tapPowerEl = document.getElementById("tapPower");
@@ -1385,6 +1398,10 @@
         root.style.setProperty("--danger", theme.danger);
         root.style.setProperty("--shadow", theme.shadow);
         root.style.setProperty("--strong-shadow", theme.strongShadow);
+
+        if (themeColorMeta) {
+          themeColorMeta.setAttribute("content", theme.bg);
+        }
 
         themeSelect.value = theme.id;
 
