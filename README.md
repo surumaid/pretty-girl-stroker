@@ -1,2 +1,2 @@
 # pretty-favorite-stroker
-推し頭撫でゲーム
+推しの頭をなでるゲーム
