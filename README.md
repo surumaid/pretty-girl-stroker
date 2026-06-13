@@ -1,2 +1,2 @@
-# pretty-girl-stroker
-美少女頭撫でゲーム
+# pretty-favorite-stroker
+推し頭撫でゲーム
