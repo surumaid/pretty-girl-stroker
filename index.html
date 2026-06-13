@@ -345,7 +345,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.25em;
+        gap: 0.08em;
         min-width: 0;
         vertical-align: middle;
       }
@@ -1439,7 +1439,9 @@
           <div class="status-card">
             <div class="status-label">
               <span class="resource-label">
-                <span class="material-symbols-rounded resource-icon" aria-hidden="true">favorite</span>
+                <span class="material-symbols-rounded resource-icon" aria-hidden="true"
+                  >favorite</span
+                >
                 <span>所持ふぁぼ度</span>
               </span>
             </div>
@@ -1486,7 +1488,9 @@
           <section class="love-mini-panel" aria-label="愛情ポイント操作">
             <div class="love-mini-label">
               <span class="resource-label">
-                <span class="material-symbols-rounded resource-icon" aria-hidden="true">digital_wellbeing</span>
+                <span class="material-symbols-rounded resource-icon" aria-hidden="true"
+                  >digital_wellbeing</span
+                >
                 <span>愛情</span>
               </span>
             </div>
@@ -1558,7 +1562,9 @@
         <div class="love-header">
           <div class="love-title">
             <span class="resource-label">
-              <span class="material-symbols-rounded resource-icon" aria-hidden="true">digital_wellbeing</span>
+              <span class="material-symbols-rounded resource-icon" aria-hidden="true"
+                >digital_wellbeing</span
+              >
               <span>愛情ポイント</span>
             </span>
           </div>
@@ -1607,7 +1613,9 @@
             <div class="achievement-card">
               <div class="achievement-label">
                 <span class="resource-label">
-                  <span class="material-symbols-rounded resource-icon" aria-hidden="true">award_star</span>
+                  <span class="material-symbols-rounded resource-icon" aria-hidden="true"
+                    >award_star</span
+                  >
                   <span>愛の結晶</span>
                 </span>
               </div>
@@ -1800,12 +1808,7 @@
 
       const LOVE_BASE_COST = 10n ** 68n;
 
-      const DAILY_CORE_MISSION_IDS = [
-        "autoBulkOnce",
-        "tapBulkOnce",
-        "tap50",
-        "tap100",
-      ];
+      const DAILY_CORE_MISSION_IDS = ["autoBulkOnce", "tapBulkOnce", "tap50", "tap100"];
 
       const SKILL_RESOURCE_NAME = "愛の結晶";
       const BASE_SKILL_MAX_LEVEL = 999;
@@ -2297,7 +2300,9 @@
       const themeSelect = document.getElementById("themeSelect");
       const characterNameInput = document.getElementById("characterNameInput");
       const saveCharacterNameButton = document.getElementById("saveCharacterNameButton");
-      const clearCharacterNameButton = document.getElementById("clearCharacterNameButton");
+      const clearCharacterNameButton = document.getElementById(
+        "clearCharacterNameButton",
+      );
       const changeCharacterImageButton = document.getElementById(
         "changeCharacterImageButton",
       );
@@ -2329,8 +2334,7 @@
           number,
           rank,
           name:
-            AUTO_ITEM_NAMES[index] ||
-            `自動アイテム ${String(number).padStart(3, "0")}`,
+            AUTO_ITEM_NAMES[index] || `自動アイテム ${String(number).padStart(3, "0")}`,
           unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
           baseCost: getAutoBaseCostByNumber(number),
           production: getAutoProductionByNumber(number),
@@ -2346,9 +2350,7 @@
           id: `tap_${number}`,
           number,
           rank,
-          name:
-            TAP_ITEM_NAMES[index] ||
-            `タップ強化 ${String(number).padStart(3, "0")}`,
+          name: TAP_ITEM_NAMES[index] || `タップ強化 ${String(number).padStart(3, "0")}`,
           unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
           baseCost: getTapBaseCostByNumber(number),
           tapBonus: getTapBonusByNumber(number),
@@ -2374,8 +2376,7 @@
         const ratio = (number - 1) / (MAX_SHOP_ITEMS - 1);
         const scaled =
           1 +
-          Math.pow(ratio, LEGACY_ITEM_SCALE_POWER) *
-            (LEGACY_MAX_SHOP_ITEM_NUMBER - 1);
+          Math.pow(ratio, LEGACY_ITEM_SCALE_POWER) * (LEGACY_MAX_SHOP_ITEM_NUMBER - 1);
 
         return Math.max(1, Math.round(scaled));
       }
@@ -2456,7 +2457,9 @@
       }
 
       function normalizeCharacterName(name) {
-        return String(name || "").trim().slice(0, CHARACTER_NAME_MAX_LENGTH);
+        return String(name || "")
+          .trim()
+          .slice(0, CHARACTER_NAME_MAX_LENGTH);
       }
 
       function syncCharacterNameDisplay() {
@@ -2883,9 +2886,9 @@
 
       function getAutoTapBonus() {
         return (
-          getAffectionPerSecond() *
-          AUTO_TAP_BONUS_NUMERATOR
-        ) / AUTO_TAP_BONUS_DENOMINATOR;
+          (getAffectionPerSecond() * AUTO_TAP_BONUS_NUMERATOR) /
+          AUTO_TAP_BONUS_DENOMINATOR
+        );
       }
 
       function getTapCollectionBonus() {
@@ -2893,13 +2896,15 @@
         if (level <= 0) return 0n;
 
         return (
-          (getTotalTapItemCountForBonus() / TAP_COLLECTION_ITEM_STEP) *
-          BigInt(level)
-        ) / TAP_COLLECTION_BONUS_DENOMINATOR;
+          ((getTotalTapItemCountForBonus() / TAP_COLLECTION_ITEM_STEP) * BigInt(level)) /
+          TAP_COLLECTION_BONUS_DENOMINATOR
+        );
       }
 
       function getBaseTapMultiplierPercent() {
-        return 100 + getSkillLevel("tapMultiplier") * TAP_RESEARCH_BONUS_PERCENT_PER_LEVEL;
+        return (
+          100 + getSkillLevel("tapMultiplier") * TAP_RESEARCH_BONUS_PERCENT_PER_LEVEL
+        );
       }
 
       function getTapMultiplierPercent() {
@@ -2915,10 +2920,9 @@
         if (level <= 0 || state.affection <= 0n) return 0n;
 
         return (
-          state.affection *
-          BigInt(level) *
-          SAVING_TAP_BONUS_NUMERATOR
-        ) / SAVING_TAP_BONUS_DENOMINATOR;
+          (state.affection * BigInt(level) * SAVING_TAP_BONUS_NUMERATOR) /
+          SAVING_TAP_BONUS_DENOMINATOR
+        );
       }
 
       function getSavingTapBoostCap() {
@@ -3439,8 +3443,7 @@
             `現在 +${formatLargeNumber(currentEffect)} / 次回 +${formatLargeNumber(nextGain)}`;
         }
 
-        elements.costEl.innerHTML =
-          `${getResourceLabelHtml("affection", "ふぁぼ度")} ${formatLargeNumber(cost)}`;
+        elements.costEl.innerHTML = `${getResourceLabelHtml("affection", "ふぁぼ度")} ${formatLargeNumber(cost)}`;
         elements.button.disabled = state.affection < cost;
       }
 
@@ -3601,11 +3604,9 @@
         } else if (isMax) {
           button.textContent = "最大強化済み";
         } else if (canBuy) {
-          button.innerHTML =
-            `${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)} ${formatLargeNumber(cost)}個で強化`;
+          button.innerHTML = `${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)} ${formatLargeNumber(cost)}個で強化`;
         } else {
-          button.innerHTML =
-            `${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)}不足：必要 ${formatLargeNumber(cost)}個`;
+          button.innerHTML = `${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)}不足：必要 ${formatLargeNumber(cost)}個`;
         }
 
         button.addEventListener("click", () => {
@@ -3637,9 +3638,7 @@
           skillListEl.appendChild(createSkillCard(skill));
         }
 
-        skillListEl.appendChild(
-          createSkillCard(INFINITE_AUTO_SKILL, !infiniteUnlocked),
-        );
+        skillListEl.appendChild(createSkillCard(INFINITE_AUTO_SKILL, !infiniteUnlocked));
       }
 
       function updateLoveArea() {
@@ -3651,8 +3650,7 @@
         lovePointsMiniEl.textContent = formatLargeNumber(state.lovePoints);
         lovePointsMiniEl.title = formatFullNumber(state.lovePoints);
 
-        loveCostEl.innerHTML =
-          `${formatLargeNumber(loveCost)} ${getResourceLabelHtml("affection", "ふぁぼ度")}`;
+        loveCostEl.innerHTML = `${formatLargeNumber(loveCost)} ${getResourceLabelHtml("affection", "ふぁぼ度")}`;
         loveCostEl.title = formatFullNumber(loveCost);
 
         const canOffer = state.affection >= loveCost;
@@ -3660,8 +3658,7 @@
         loveOfferButton.disabled = !canOffer;
 
         if (canOffer) {
-          loveOfferButton.innerHTML =
-            `${getResourceLabelHtml("affection", "ふぁぼ度")}を捧げる（${getResourceLabelHtml("lovePoint", "愛情")} +1 / ${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)} +1）`;
+          loveOfferButton.innerHTML = `${getResourceLabelHtml("affection", "ふぁぼ度")}を捧げる（${getResourceLabelHtml("lovePoint", "愛情")} +1 / ${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)} +1）`;
         } else {
           loveOfferButton.innerHTML = `${getResourceLabelHtml("affection", "ふぁぼ度")}が足りません`;
         }
@@ -3738,8 +3735,7 @@
         }
 
         const cappedText = result.wasCapped ? " / 上限48時間" : "";
-        offlineNoticeEl.innerHTML =
-          `留守中 ${formatDuration(result.appliedSeconds)}ぶんの${getResourceLabelHtml("affection", "ふぁぼ度")} +${formatLargeNumber(result.gain)}${cappedText}`;
+        offlineNoticeEl.innerHTML = `留守中 ${formatDuration(result.appliedSeconds)}ぶんの${getResourceLabelHtml("affection", "ふぁぼ度")} +${formatLargeNumber(result.gain)}${cappedText}`;
         offlineNoticeEl.style.display = "block";
 
         offlineNoticeTimer = setTimeout(() => {
