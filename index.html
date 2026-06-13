@@ -384,6 +384,21 @@
         text-overflow: ellipsis;
       }
 
+      .status-sub-value {
+        margin-top: 2px;
+        font-size: 10px;
+        font-weight: 800;
+        line-height: 1.25;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .status-sub-value[hidden] {
+        display: none;
+      }
+
       .offline-notice {
         display: none;
         padding: 6px 10px;
@@ -464,6 +479,34 @@
         font-weight: 800;
         letter-spacing: 0.08em;
         pointer-events: none;
+      }
+
+      .character-name-plate {
+        position: absolute;
+        left: 50%;
+        bottom: 8px;
+        z-index: 3;
+        max-width: 92%;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: var(--floating-panel);
+        background: color-mix(in srgb, var(--panel) 94%, transparent);
+        color: var(--accent);
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.2;
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        box-shadow: 0 3px 10px var(--shadow);
+        pointer-events: none;
+        transform: translateX(-50%);
+        backdrop-filter: blur(2px);
+      }
+
+      .character-name-plate[hidden] {
+        display: none;
       }
 
       .love-mini-panel {
@@ -1211,6 +1254,7 @@
               class="decor-stroke-sm decor-sway-f"
               d="M1010 162 l24 -24 l24 24 l-24 24 z"
             />
+
             <path
               class="decor-line-sm decor-sway-d"
               d="M1220 150 C1340 60 1420 220 1540 130 S1760 50 1880 130 S2100 220 2220 120 S2360 70 2400 105"
@@ -1262,6 +1306,7 @@
               class="decor-stroke-md decor-sway-d"
               d="M1080 58 C1110 30 1150 30 1180 58"
             />
+
             <path
               class="decor-line-xs decor-sway-f"
               d="M1210 108 C1330 188 1450 38 1590 116 S1860 206 2010 98 S2260 44 2400 132"
@@ -1313,6 +1358,7 @@
               class="decor-stroke-sm decor-sway-d"
               d="M980 70 l18 -30 l18 30 l-18 30 z"
             />
+
             <path
               class="decor-line-xs decor-sway-b"
               d="M1200 140 C1330 98 1410 170 1530 128 S1720 46 1850 92 S2060 188 2210 126 S2340 88 2400 112"
@@ -1359,6 +1405,7 @@
           <div class="status-card">
             <div class="status-label">タップ増加</div>
             <div id="tapPower" class="status-value">1</div>
+            <div id="savingTapPower" class="status-sub-value" hidden></div>
           </div>
           <div class="status-card">
             <div class="status-label">自動増加</div>
@@ -1388,6 +1435,8 @@
                   assets/chara.png
                 </div>
               </div>
+
+              <div id="characterNamePlate" class="character-name-plate" hidden></div>
             </div>
           </button>
 
@@ -1434,6 +1483,7 @@
 
         <div class="accordion-content">
           <div id="dailyMissionList" class="daily-list"></div>
+
           <div class="daily-detail">
             毎日0時に更新されます。達成した報酬は自動で受け取ります。
           </div>
@@ -1448,6 +1498,7 @@
 
         <div class="accordion-content">
           <div id="skillList" class="skill-list"></div>
+
           <div class="skill-detail">
             愛の結晶を消費して、ふぁぼ度の増加量に倍率をかけます。
             全ての基本スキルがLv.999になると、自動増加を少しずつ伸ばせる無限強化が解放されます。
@@ -1522,6 +1573,26 @@
               <select id="themeSelect" class="theme-select"></select>
             </div>
 
+            <div class="setting-field">
+              <label class="setting-label" for="characterNameInput">キャラの名前</label>
+              <input
+                id="characterNameInput"
+                class="text-input"
+                type="text"
+                maxlength="20"
+                placeholder="名前を入力"
+              />
+            </div>
+
+            <div class="button-grid">
+              <button id="saveCharacterNameButton" class="sub-button" type="button">
+                名前を保存
+              </button>
+              <button id="clearCharacterNameButton" class="sub-button" type="button">
+                名前を消す
+              </button>
+            </div>
+
             <div class="button-grid">
               <button id="changeCharacterImageButton" class="sub-button" type="button">
                 キャラ画像を選択
@@ -1532,8 +1603,8 @@
             </div>
 
             <div class="notice">
-              選択した画像とカラーテーマは、この端末のブラウザ内に保存されます。
-              セーブコードには画像データやテーマ設定は含まれません。
+              キャラ名はセーブコード・セーブファイルに含まれます。
+              画像とカラーテーマは、この端末のブラウザ内に保存されます。
             </div>
 
             <input
@@ -1639,6 +1710,8 @@
 
       const DEFAULT_CHARACTER_IMAGE_SRC = "assets/chara.png";
       const DEFAULT_THEME_ID = "milkTea";
+
+      const CHARACTER_NAME_MAX_LENGTH = 20;
 
       const MAX_SHOP_ITEMS = 20;
       const LEGACY_MAX_SHOP_ITEM_NUMBER = 999;
@@ -2108,11 +2181,13 @@
 
       const affectionEl = document.getElementById("affection");
       const tapPowerEl = document.getElementById("tapPower");
+      const savingTapPowerEl = document.getElementById("savingTapPower");
       const perSecondEl = document.getElementById("perSecond");
       const characterButton = document.getElementById("characterButton");
       const characterImageEl = document.getElementById("characterImage");
       const characterPlaceholderEl = document.getElementById("characterPlaceholder");
       const characterBounceEl = document.getElementById("characterBounce");
+      const characterNamePlateEl = document.getElementById("characterNamePlate");
       const offlineNoticeEl = document.getElementById("offlineNotice");
 
       const shopListEl = document.getElementById("shopList");
@@ -2141,6 +2216,11 @@
       const loveCrystalCountEl = document.getElementById("loveCrystalCount");
 
       const themeSelect = document.getElementById("themeSelect");
+      const characterNameInput = document.getElementById("characterNameInput");
+      const saveCharacterNameButton = document.getElementById("saveCharacterNameButton");
+      const clearCharacterNameButton = document.getElementById(
+        "clearCharacterNameButton",
+      );
       const changeCharacterImageButton = document.getElementById(
         "changeCharacterImageButton",
       );
@@ -2275,6 +2355,7 @@
       function createDefaultState() {
         return {
           version: 6,
+          characterName: "",
           affection: 0n,
           totalAffection: 0n,
           bestAffection: 0n,
@@ -2291,6 +2372,33 @@
           daily: createDefaultDailyState(),
           lastSavedAt: Date.now(),
         };
+      }
+
+      function normalizeCharacterName(name) {
+        return String(name || "")
+          .trim()
+          .slice(0, CHARACTER_NAME_MAX_LENGTH);
+      }
+
+      function syncCharacterNameDisplay() {
+        const characterName = normalizeCharacterName(state.characterName);
+
+        state.characterName = characterName;
+        characterNameInput.value = characterName;
+
+        if (characterName) {
+          characterNamePlateEl.textContent = characterName;
+          characterNamePlateEl.hidden = false;
+        } else {
+          characterNamePlateEl.textContent = "";
+          characterNamePlateEl.hidden = true;
+        }
+      }
+
+      function setCharacterName(name) {
+        state.characterName = normalizeCharacterName(name);
+        syncCharacterNameDisplay();
+        saveLocal();
       }
 
       function applyTheme(themeId, shouldSave = true) {
@@ -2686,14 +2794,19 @@
         return 100 + coreBonus + collectionBonus + infiniteBonus;
       }
 
-      function getTapMultiplierPercent() {
+      function getBaseTapMultiplierPercent() {
         const coreBonus = getSkillLevel("tapMultiplier") * 10;
-        const savingBonus = getSavingTapBoostPercent();
         const collectionLevel = getSkillLevel("tapCollectionBoost");
         const collectionBonus =
           Math.floor(Number(getTotalTapItemCountForBonus() / 10n)) * collectionLevel;
 
-        return 100 + coreBonus + savingBonus + collectionBonus;
+        return 100 + coreBonus + collectionBonus;
+      }
+
+      function getTapMultiplierPercent() {
+        const savingBonus = getSavingTapBoostPercent();
+
+        return getBaseTapMultiplierPercent() + savingBonus;
       }
 
       function getSkillCurrentEffectText(skill) {
@@ -2787,8 +2900,22 @@
         );
       }
 
+      function getRawTapPowerWithoutSaving() {
+        return applyPercent(getBaseTapPower(), getBaseTapMultiplierPercent());
+      }
+
       function getRawTapPower() {
         return applyPercent(getBaseTapPower(), getTapMultiplierPercent());
+      }
+
+      function getEffectiveTapPowerWithoutSaving() {
+        const rawTapPower = getRawTapPowerWithoutSaving();
+        const autoBasedFloor = ceilDiv(
+          getAffectionPerSecond() * TAP_AUTO_FLOOR_NUMERATOR,
+          TAP_AUTO_FLOOR_DENOMINATOR,
+        );
+
+        return maxBigInt(1n, maxBigInt(rawTapPower, autoBasedFloor));
       }
 
       function getEffectiveTapPower() {
@@ -2841,6 +2968,7 @@
         }
 
         processDailyMissions();
+
         updateAll();
         saveLocal();
       }
@@ -3193,13 +3321,27 @@
       }
 
       function updateStats() {
-        const tapPower = getEffectiveTapPower();
+        const baseTapPower = getEffectiveTapPowerWithoutSaving();
+        const savingTapPower = getEffectiveTapPower();
         const perSecond = getAffectionPerSecond();
+        const savingTapLevel = getSkillLevel("savingTapBoost");
 
         affectionEl.textContent = formatLargeNumber(state.affection);
         affectionEl.title = formatFullNumber(state.affection);
 
-        tapPowerEl.textContent = formatLargeNumber(tapPower);
+        tapPowerEl.textContent = formatLargeNumber(baseTapPower);
+        tapPowerEl.title = formatFullNumber(baseTapPower);
+
+        if (savingTapLevel > 0) {
+          savingTapPowerEl.textContent = `愛の貯蓄込み：${formatLargeNumber(savingTapPower)}`;
+          savingTapPowerEl.title = formatFullNumber(savingTapPower);
+          savingTapPowerEl.hidden = false;
+        } else {
+          savingTapPowerEl.textContent = "";
+          savingTapPowerEl.title = "";
+          savingTapPowerEl.hidden = true;
+        }
+
         perSecondEl.textContent = formatLargeNumber(perSecond);
 
         const items = getItemsByType(activeShopType);
@@ -3512,6 +3654,7 @@
       function serializeState() {
         return {
           version: 6,
+          characterName: state.characterName,
           affection: state.affection.toString(),
           totalAffection: state.totalAffection.toString(),
           bestAffection: state.bestAffection.toString(),
@@ -3623,6 +3766,7 @@
         const shouldConvertOverflowItems = sourceVersion < 5 || !hasLegacyBonusFields;
 
         cleanData.version = 6;
+        cleanData.characterName = normalizeCharacterName(data.characterName);
         cleanData.affection = parseBigIntValue(data.affection);
         cleanData.totalAffection = parseBigIntValue(data.totalAffection);
         cleanData.bestAffection = maxBigInt(
@@ -3711,6 +3855,7 @@
       function applySaveData(data, shouldSave = true) {
         state = sanitizeSaveData(data);
         resetShopDom();
+        syncCharacterNameDisplay();
         updateAll();
 
         if (shouldSave) {
@@ -3766,6 +3911,21 @@
 
       themeSelect.addEventListener("change", () => {
         applyTheme(themeSelect.value, true);
+      });
+
+      saveCharacterNameButton.addEventListener("click", () => {
+        setCharacterName(characterNameInput.value);
+      });
+
+      clearCharacterNameButton.addEventListener("click", () => {
+        setCharacterName("");
+      });
+
+      characterNameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          setCharacterName(characterNameInput.value);
+        }
       });
 
       characterImageEl.addEventListener("load", () => {
@@ -3937,6 +4097,7 @@
 
         state = createDefaultState();
         resetShopDom();
+        syncCharacterNameDisplay();
         updateAll();
         saveLocal();
 
@@ -3977,6 +4138,7 @@
       setupThemeSelect();
       loadSavedCharacterImage();
       loadLocal();
+      syncCharacterNameDisplay();
 
       const offlineResult = applyOfflineProgress();
 
