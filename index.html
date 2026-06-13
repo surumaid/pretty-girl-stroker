@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>好感度クリッカー</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f4efe8;
+      color: #2f2a26;
+      touch-action: manipulation;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 480px;
+      height: 100vh;
+      height: 100svh;
+      margin: 0 auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .touch-area {
+      height: 34svh;
+      min-height: 240px;
+      flex: 0 0 auto;
+      padding: 10px;
+      border-radius: 18px;
+      background: #fffaf3;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex: 0 0 auto;
+    }
+
+    .status-card {
+      padding: 8px;
+      border-radius: 12px;
+      background: #ffffff;
+      text-align: center;
+    }
+
+    .status-label {
+      font-size: 11px;
+      color: #7c7067;
+    }
+
+    .status-value {
+      margin-top: 2px;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .character-button {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #fff, #f3e6d9);
+      box-shadow: inset 0 -4px 0 rgba(0, 0, 0, 0.06);
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .character-button:active {
+      transform: translateY(2px);
+    }
+
+    .character-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .character-placeholder {
+      display: none;
+      width: 100%;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      color: #9a8d82;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      pointer-events: none;
+    }
+
+    .tap-label {
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%);
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.85);
+      color: #7c5d42;
+      font-size: 12px;
+      font-weight: 700;
+      pointer-events: none;
+    }
+
+    .shop-area {
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 10px;
+      border-radius: 18px;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .shop-header {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee1d7;
+    }
+
+    .shop-title {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .shop-info {
+      font-size: 11px;
+      color: #7c7067;
+      text-align: right;
+      line-height: 1.4;
+    }
+
+    .shop-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .shop-item {
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      background: #fffaf3;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      text-align: left;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      cursor: pointer;
+    }
+
+    .shop-item:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .item-name {
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .item-detail {
+      margin-top: 4px;
+      font-size: 11px;
+      line-height: 1.45;
+      color: #7c7067;
+    }
+
+    .item-cost {
+      font-size: 13px;
+      font-weight: 800;
+      white-space: nowrap;
+      color: #7c5d42;
+    }
+
+    .backup-area {
+      flex: 0 0 auto;
+      border-radius: 16px;
+      background: #ffffff;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .backup-area summary {
+      padding: 12px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .backup-content {
+      padding: 0 12px 12px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .backup-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .sub-button {
+      border: none;
+      border-radius: 12px;
+      padding: 10px;
+      background: #e8ddd3;
+      color: #2f2a26;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .danger-button {
+      background: #ead1d1;
+    }
+
+    .save-code {
+      width: 100%;
+      height: 72px;
+      padding: 8px;
+      border: 1px solid #e5d8ce;
+      border-radius: 10px;
+      resize: vertical;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <section class="touch-area">
+      <div class="status">
+        <div class="status-card">
+          <div class="status-label">所持好感度</div>
+          <div id="affection" class="status-value">0</div>
+        </div>
+        <div class="status-card">
+          <div class="status-label">自動増加</div>
+          <div class="status-value">
+            <span id="perSecond">0</span>/秒
+          </div>
+        </div>
+      </div>
+
+      <button id="characterButton" class="character-button" type="button" aria-label="キャラクターをなでる">
+        <img
+          class="character-image"
+          src="assets/chara.png"
+          alt="キャラクター"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+        />
+        <div class="character-placeholder">
+          CHARACTER<br />
+          assets/chara.png
+        </div>
+        <div class="tap-label">タップでなでる +1</div>
+      </button>
+    </section>
+
+    <section class="shop-area">
+      <div class="shop-header">
+        <div class="shop-title">ショップ</div>
+        <div id="shopInfo" class="shop-info"></div>
+      </div>
+
+      <div id="shopList" class="shop-list"></div>
+    </section>
+
+    <section class="backup-area">
+      <details>
+        <summary>セーブ / ロード / リセット</summary>
+
+        <div class="backup-content">
+          <div class="backup-buttons">
+            <button id="downloadSaveButton" class="sub-button" type="button">セーブファイル保存</button>
+            <button id="loadFileButton" class="sub-button" type="button">ファイルからロード</button>
+          </div>
+
+          <div class="backup-buttons">
+            <button id="generateCodeButton" class="sub-button" type="button">セーブコード生成</button>
+            <button id="loadCodeButton" class="sub-button" type="button">コードからロード</button>
+          </div>
+
+          <textarea id="saveCode" class="save-code" placeholder="セーブコードをここに表示 / 貼り付け"></textarea>
+
+          <button id="resetButton" class="sub-button danger-button" type="button">データリセット</button>
+
+          <input id="saveFileInput" type="file" accept="application/json,.json" hidden />
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <script>
+    const SAVE_KEY = "affection_clicker_save_v1";
+    const MAX_SHOP_ITEMS = 999;
+    const ITEMS_PER_RANK = 20;
+
+    const affectionEl = document.getElementById("affection");
+    const perSecondEl = document.getElementById("perSecond");
+    const characterButton = document.getElementById("characterButton");
+    const shopListEl = document.getElementById("shopList");
+    const shopInfoEl = document.getElementById("shopInfo");
+    const downloadSaveButton = document.getElementById("downloadSaveButton");
+    const loadFileButton = document.getElementById("loadFileButton");
+    const saveFileInput = document.getElementById("saveFileInput");
+    const generateCodeButton = document.getElementById("generateCodeButton");
+    const loadCodeButton = document.getElementById("loadCodeButton");
+    const saveCodeEl = document.getElementById("saveCode");
+    const resetButton = document.getElementById("resetButton");
+
+    const formatter = new Intl.NumberFormat("ja-JP", {
+      maximumFractionDigits: 0
+    });
+
+    const shopItems = Array.from({ length: MAX_SHOP_ITEMS }, (_, index) => {
+      const number = index + 1;
+      const rank = Math.floor((number - 1) / ITEMS_PER_RANK) + 1;
+
+      return {
+        id: `item_${number}`,
+        number,
+        rank,
+        name: `ダミーアイテム ${String(number).padStart(3, "0")}`,
+        unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
+        baseCost: Math.floor(8 + Math.pow(number, 1.28) * 7),
+        production: Math.max(1, Math.floor(Math.pow(number, 1.08) / 3))
+      };
+    });
+
+    const validItemIds = new Set(shopItems.map((item) => item.id));
+
+    let state = createDefaultState();
+    let renderedItemCount = 0;
+    let saveTimer = null;
+
+    const itemElements = new Map();
+
+    function createDefaultState() {
+      return {
+        version: 1,
+        affection: 0,
+        totalAffection: 0,
+        bestAffection: 0,
+        itemCounts: {},
+        lastSavedAt: Date.now()
+      };
+    }
+
+    function formatNumber(value) {
+      return formatter.format(Math.floor(value));
+    }
+
+    function getItemCount(item) {
+      return state.itemCounts[item.id] || 0;
+    }
+
+    function getItemCost(item) {
+      const count = getItemCount(item);
+      return Math.floor(item.baseCost * Math.pow(1.15, count));
+    }
+
+    function getAffectionPerSecond() {
+      return shopItems.reduce((total, item) => {
+        return total + getItemCount(item) * item.production;
+      }, 0);
+    }
+
+    function addAffection(amount) {
+      state.affection += amount;
+      state.totalAffection += amount;
+      state.bestAffection = Math.max(state.bestAffection, state.affection);
+
+      updateAll();
+      queueSave();
+    }
+
+    function buyItem(item) {
+      const cost = getItemCost(item);
+      if (state.affection < cost) return;
+
+      state.affection -= cost;
+      state.itemCounts[item.id] = getItemCount(item) + 1;
+
+      updateAll();
+      saveLocal();
+    }
+
+    function createShopItemElement(item) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "shop-item";
+
+      const left = document.createElement("div");
+
+      const nameEl = document.createElement("div");
+      nameEl.className = "item-name";
+
+      const detailEl = document.createElement("div");
+      detailEl.className = "item-detail";
+
+      const costEl = document.createElement("div");
+      costEl.className = "item-cost";
+
+      left.appendChild(nameEl);
+      left.appendChild(detailEl);
+      button.appendChild(left);
+      button.appendChild(costEl);
+
+      button.addEventListener("click", () => {
+        buyItem(item);
+      });
+
+      shopListEl.appendChild(button);
+
+      itemElements.set(item.id, {
+        button,
+        nameEl,
+        detailEl,
+        costEl
+      });
+
+      updateShopItem(item);
+    }
+
+    function syncUnlockedItems() {
+      while (
+        renderedItemCount < shopItems.length &&
+        shopItems[renderedItemCount].unlockAt <= state.bestAffection
+      ) {
+        createShopItemElement(shopItems[renderedItemCount]);
+        renderedItemCount += 1;
+      }
+    }
+
+    function updateShopItem(item) {
+      const elements = itemElements.get(item.id);
+      if (!elements) return;
+
+      const count = getItemCount(item);
+      const cost = getItemCost(item);
+
+      elements.nameEl.textContent = item.name;
+      elements.detailEl.textContent =
+        `ランク${item.rank} / 所持数: ${count} / 自動好感度 +${formatNumber(item.production)}/秒`;
+      elements.costEl.textContent = `${formatNumber(cost)} 好感度`;
+      elements.button.disabled = state.affection < cost;
+    }
+
+    function updateShopButtons() {
+      for (let i = 0; i < renderedItemCount; i++) {
+        updateShopItem(shopItems[i]);
+      }
+    }
+
+    function updateStats() {
+      affectionEl.textContent = formatNumber(state.affection);
+      perSecondEl.textContent = formatNumber(getAffectionPerSecond());
+
+      const nextItem = shopItems[renderedItemCount];
+      const nextUnlockText = nextItem
+        ? `次: ${formatNumber(nextItem.unlockAt)} 好感度`
+        : "全解放済み";
+
+      shopInfoEl.innerHTML =
+        `表示中: ${renderedItemCount}/${MAX_SHOP_ITEMS}<br>` +
+        `最高所持: ${formatNumber(state.bestAffection)} / ${nextUnlockText}`;
+    }
+
+    function updateAll() {
+      syncUnlockedItems();
+      updateStats();
+      updateShopButtons();
+    }
+
+    function queueSave() {
+      if (saveTimer) return;
+
+      saveTimer = setTimeout(() => {
+        saveLocal();
+        saveTimer = null;
+      }, 1000);
+    }
+
+    function saveLocal() {
+      state.lastSavedAt = Date.now();
+      localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+    }
+
+    function loadLocal() {
+      const rawData = localStorage.getItem(SAVE_KEY);
+      if (!rawData) return;
+
+      try {
+        const data = JSON.parse(rawData);
+        applySaveData(data, false);
+      } catch (error) {
+        console.warn("自動保存データの読み込みに失敗しました。", error);
+      }
+    }
+
+    function createExportData() {
+      return {
+        ...state,
+        exportedAt: new Date().toISOString()
+      };
+    }
+
+    function sanitizeSaveData(data) {
+      if (!data || typeof data !== "object") {
+        throw new Error("セーブデータの形式が正しくありません。");
+      }
+
+      const cleanData = createDefaultState();
+
+      cleanData.version = 1;
+      cleanData.affection = Math.max(0, Number(data.affection) || 0);
+      cleanData.totalAffection = Math.max(0, Number(data.totalAffection) || 0);
+      cleanData.bestAffection = Math.max(
+        cleanData.affection,
+        Number(data.bestAffection) || 0
+      );
+      cleanData.lastSavedAt = Number(data.lastSavedAt) || Date.now();
+      cleanData.itemCounts = {};
+
+      if (data.itemCounts && typeof data.itemCounts === "object") {
+        for (const [id, count] of Object.entries(data.itemCounts)) {
+          if (!validItemIds.has(id)) continue;
+          cleanData.itemCounts[id] = Math.max(0, Math.floor(Number(count) || 0));
+        }
+      }
+
+      return cleanData;
+    }
+
+    function resetShopDom() {
+      renderedItemCount = 0;
+      itemElements.clear();
+      shopListEl.innerHTML = "";
+    }
+
+    function applySaveData(data, shouldSave = true) {
+      state = sanitizeSaveData(data);
+      resetShopDom();
+      updateAll();
+
+      if (shouldSave) {
+        saveLocal();
+      }
+    }
+
+    function downloadSaveFile() {
+      saveLocal();
+
+      const json = JSON.stringify(createExportData(), null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+
+      const now = new Date();
+      const fileName =
+        "affection-save-" +
+        now.getFullYear() +
+        String(now.getMonth() + 1).padStart(2, "0") +
+        String(now.getDate()).padStart(2, "0") +
+        "-" +
+        String(now.getHours()).padStart(2, "0") +
+        String(now.getMinutes()).padStart(2, "0") +
+        ".json";
+
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = fileName;
+      link.click();
+
+      URL.revokeObjectURL(url);
+    }
+
+    function loadFromText(text) {
+      const data = JSON.parse(text);
+
+      if (!confirm("現在のデータを上書きしてロードします。よろしいですか？")) {
+        return;
+      }
+
+      applySaveData(data, true);
+      alert("ロードしました。");
+    }
+
+    characterButton.addEventListener("click", () => {
+      addAffection(1);
+      saveLocal();
+    });
+
+    downloadSaveButton.addEventListener("click", () => {
+      downloadSaveFile();
+    });
+
+    loadFileButton.addEventListener("click", () => {
+      saveFileInput.click();
+    });
+
+    saveFileInput.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        try {
+          loadFromText(String(reader.result));
+        } catch (error) {
+          alert("セーブファイルを読み込めませんでした。");
+          console.error(error);
+        } finally {
+          saveFileInput.value = "";
+        }
+      };
+
+      reader.readAsText(file);
+    });
+
+    generateCodeButton.addEventListener("click", () => {
+      saveLocal();
+      saveCodeEl.value = JSON.stringify(createExportData());
+      saveCodeEl.select();
+    });
+
+    loadCodeButton.addEventListener("click", () => {
+      const text = saveCodeEl.value.trim();
+
+      if (!text) {
+        alert("セーブコードを貼り付けてください。");
+        return;
+      }
+
+      try {
+        loadFromText(text);
+      } catch (error) {
+        alert("セーブコードを読み込めませんでした。");
+        console.error(error);
+      }
+    });
+
+    resetButton.addEventListener("click", () => {
+      if (!confirm("すべての進行データをリセットします。よろしいですか？")) {
+        return;
+      }
+
+      state = createDefaultState();
+      resetShopDom();
+      updateAll();
+      saveLocal();
+    });
+
+    setInterval(() => {
+      const perSecond = getAffectionPerSecond();
+      if (perSecond <= 0) return;
+
+      addAffection(perSecond);
+    }, 1000);
+
+    window.addEventListener("beforeunload", () => {
+      saveLocal();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        saveLocal();
+      }
+    });
+
+    loadLocal();
+    updateAll();
+  </script>
+</body>
+</html>
