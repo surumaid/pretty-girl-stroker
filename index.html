@@ -517,23 +517,77 @@
         cursor: not-allowed;
       }
 
-      .shop-area {
-        height: 66svh;
-        min-height: 420px;
+      .shop-area,
+      .daily-area,
+      .skill-tree-area,
+      .love-area,
+      .achievement-area,
+      .tool-panel {
         flex: 0 0 auto;
-        padding: 10px;
         border-radius: 18px;
         background: var(--panel);
         background: color-mix(in srgb, var(--panel) 96%, transparent);
         box-shadow: 0 4px 14px var(--shadow);
-        display: flex;
-        flex-direction: column;
         backdrop-filter: blur(2px);
       }
 
-      .shop-header,
-      .daily-header,
-      .skill-header {
+      .shop-area {
+        height: 66svh;
+        min-height: 420px;
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .daily-area,
+      .skill-tree-area,
+      .love-area,
+      .achievement-area {
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .accordion-area {
+        display: block;
+      }
+
+      .accordion-summary {
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .accordion-summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .accordion-summary::after {
+        content: "⌄";
+        flex: 0 0 auto;
+        color: var(--accent);
+        font-size: 18px;
+        font-weight: 900;
+        line-height: 1;
+        transition: transform 180ms ease;
+      }
+
+      .accordion-area[open] .accordion-summary::after {
+        transform: rotate(180deg);
+      }
+
+      .accordion-content {
+        display: grid;
+        gap: 10px;
+        padding-top: 10px;
+      }
+
+      .shop-header {
         flex: 0 0 auto;
         display: flex;
         justify-content: space-between;
@@ -545,7 +599,8 @@
 
       .shop-title,
       .daily-title,
-      .skill-title {
+      .skill-title,
+      .achievement-title {
         font-size: 18px;
         font-weight: 800;
         white-space: nowrap;
@@ -669,21 +724,6 @@
         line-height: 1.5;
       }
 
-      .daily-area,
-      .skill-tree-area,
-      .love-area,
-      .achievement-area {
-        flex: 0 0 auto;
-        padding: 12px;
-        border-radius: 18px;
-        background: var(--panel);
-        background: color-mix(in srgb, var(--panel) 96%, transparent);
-        box-shadow: 0 4px 14px var(--shadow);
-        display: grid;
-        gap: 10px;
-        backdrop-filter: blur(2px);
-      }
-
       .daily-list,
       .skill-list {
         display: grid;
@@ -705,6 +745,10 @@
       }
 
       .daily-card.is-claimed {
+        opacity: 0.78;
+      }
+
+      .skill-card.is-locked {
         opacity: 0.78;
       }
 
@@ -763,8 +807,7 @@
         gap: 12px;
       }
 
-      .love-title,
-      .achievement-title {
+      .love-title {
         font-size: 18px;
         font-weight: 800;
         white-space: nowrap;
@@ -838,11 +881,7 @@
 
       .tool-panel {
         border-radius: 14px;
-        background: var(--panel);
-        background: color-mix(in srgb, var(--panel) 96%, transparent);
-        box-shadow: 0 3px 10px var(--shadow);
         overflow: hidden;
-        backdrop-filter: blur(2px);
       }
 
       .tool-panel summary {
@@ -1390,33 +1429,36 @@
         <div id="shopList" class="shop-list"></div>
       </section>
 
-      <section class="daily-area">
-        <div class="daily-header">
+      <details class="daily-area accordion-area" open>
+        <summary class="accordion-summary">
           <div class="daily-title">デイリーミッション</div>
           <div id="dailyInfo" class="daily-info"></div>
+        </summary>
+
+        <div class="accordion-content">
+          <div id="dailyMissionList" class="daily-list"></div>
+
+          <div class="daily-detail">
+            毎日0時に更新されます。達成した報酬は自動で受け取ります。
+          </div>
         </div>
+      </details>
 
-        <div id="dailyMissionList" class="daily-list"></div>
-
-        <div class="daily-detail">
-          毎日0時に更新されます。達成した報酬は自動で受け取ります。
-        </div>
-      </section>
-
-      <section class="skill-tree-area">
-        <div class="skill-header">
+      <details class="skill-tree-area accordion-area" open>
+        <summary class="accordion-summary">
           <div class="skill-title">スキルツリー</div>
           <div id="skillInfo" class="skill-info"></div>
-        </div>
+        </summary>
 
-        <div id="skillList" class="skill-list"></div>
+        <div class="accordion-content">
+          <div id="skillList" class="skill-list"></div>
 
-        <div class="skill-detail">
-          愛の結晶を消費して、ふぁぼ度の増加量に倍率をかけます。
-          各ショップアイテムは、同一アイテムの所持数10個ごとに、そのアイテム自身の効果が+10%されます。
-          旧バージョンで21番以降のアイテムを所持していた場合、その効果は補填ボーナスとして維持されます。
+          <div class="skill-detail">
+            愛の結晶を消費して、ふぁぼ度の増加量に倍率をかけます。
+            全ての基本スキルがLv.999になると、自動増加を少しずつ伸ばせる無限強化が解放されます。
+          </div>
         </div>
-      </section>
+      </details>
 
       <section class="love-area">
         <div class="love-header">
@@ -1427,6 +1469,7 @@
         <div class="love-detail">
           一定量のふぁぼ度を捧げると、愛情ポイントが1増えます。<br />
           愛情ポイントはショップ・タップ・自動増加には影響しません。<br />
+          愛情ポイントが増えるたび、強化素材「愛の結晶」も1個増えます。<br />
           あなたのたゆまぬ愛情を視覚化するものです。<br />
           次に必要なふぁぼ度：<span id="loveCost" class="love-cost">1無量大数</span>
         </div>
@@ -1436,36 +1479,44 @@
         </button>
       </section>
 
-      <section class="achievement-area">
-        <div class="achievement-title">実績</div>
+      <details class="achievement-area accordion-area" open>
+        <summary class="accordion-summary">
+          <div class="achievement-title">実績</div>
+        </summary>
 
-        <div class="achievement-grid">
-          <div class="achievement-card">
-            <div class="achievement-label">今までなでた回数</div>
-            <div id="tapCount" class="achievement-value">0</div>
+        <div class="accordion-content">
+          <div class="achievement-grid">
+            <div class="achievement-card">
+              <div class="achievement-label">今までなでた回数</div>
+              <div id="tapCount" class="achievement-value">0</div>
+            </div>
+
+            <div class="achievement-card">
+              <div class="achievement-label">今までの最大ふぁぼ度所持数</div>
+              <div id="maxAffectionRecord" class="achievement-value">0</div>
+            </div>
+
+            <div class="achievement-card">
+              <div class="achievement-label">全購入アイテム所持数</div>
+              <div id="totalItemCount" class="achievement-value">0</div>
+              <div id="totalItemBreakdown" class="achievement-detail">
+                現バージョン 1〜20：0<br />
+                旧バージョン 21〜999：0
+              </div>
+            </div>
+
+            <div class="achievement-card">
+              <div class="achievement-label">愛の結晶</div>
+              <div id="loveCrystalCount" class="achievement-value">0</div>
+            </div>
           </div>
 
-          <div class="achievement-card">
-            <div class="achievement-label">今までの最大ふぁぼ度所持数</div>
-            <div id="maxAffectionRecord" class="achievement-value">0</div>
-          </div>
-
-          <div class="achievement-card">
-            <div class="achievement-label">全購入アイテム所持数</div>
-            <div id="totalItemCount" class="achievement-value">0</div>
-          </div>
-
-          <div class="achievement-card">
-            <div class="achievement-label">愛の結晶</div>
-            <div id="loveCrystalCount" class="achievement-value">0</div>
+          <div class="achievement-detail">
+            全購入アイテム所持数は、自動増加アイテムとタップ強化アイテムの合計です。
+            旧バージョンで21番以降のアイテムを所持していた場合、その所持数も合計に含まれます。
           </div>
         </div>
-
-        <div class="achievement-detail">
-          全購入アイテム所持数は、自動増加アイテムとタップ強化アイテムの合計です。
-          旧バージョンで21番以降のアイテムを所持していた場合、その所持数も合計に含まれます。
-        </div>
-      </section>
+      </details>
 
       <section class="tools-area">
         <details class="tool-panel">
@@ -1579,8 +1630,9 @@
     </main>
 
     <script>
-      const SAVE_KEY = "affection_clicker_save_v5";
+      const SAVE_KEY = "affection_clicker_save_v6";
       const OLD_SAVE_KEYS = [
+        "affection_clicker_save_v5",
         "affection_clicker_save_v4",
         "affection_clicker_save_v3",
         "affection_clicker_save_v2",
@@ -1616,6 +1668,53 @@
       const DAILY_CORE_MISSION_IDS = ["autoBulkOnce", "tapBulkOnce", "tap50", "tap100"];
 
       const SKILL_RESOURCE_NAME = "愛の結晶";
+      const BASE_SKILL_MAX_LEVEL = 999;
+
+      const AUTO_ITEM_NAMES = [
+        "好きなおやつ",
+        "好きな食べ物",
+        "好きな飲み物",
+        "趣味のグッズ",
+        "欲しがってた服",
+        "寝具セット",
+        "カタログギフト",
+        "国内旅行",
+        "高級ディナー",
+        "100万ドルの夜景",
+        "高級旅館3泊4日",
+        "金一封",
+        "海外旅行",
+        "有名企業の株",
+        "持ち家",
+        "全財産",
+        "世界の要人との人脈",
+        "世界一周旅行",
+        "この世の全て",
+        "人間界を司る概念の全て",
+      ];
+
+      const TAP_ITEM_NAMES = [
+        "やさしい手つき",
+        "やわらかミトン",
+        "すべすべ化粧水",
+        "ふわふわタオル",
+        "低刺激ハンドクリーム",
+        "撫で入門書",
+        "癒やしの指使い",
+        "極上ヘッドスパ",
+        "夢見心地マッサージ",
+        "無限撫で筋力",
+        "天使の手ざわり",
+        "幸せホルモン増幅術",
+        "包みこむ母性",
+        "ひと撫でで眠る手技",
+        "魂を癒やす掌",
+        "精神に到達する指先",
+        "奇跡の撫で理論",
+        "愛する者を慈しむ手",
+        "令和最新版撫で技法",
+        "ゴッドハンド",
+      ];
 
       const LARGE_UNITS = [
         "",
@@ -1930,12 +2029,14 @@
         },
       ];
 
-      const SKILLS = [
+      const BASE_SKILLS = [
         {
           id: "autoMultiplier",
           name: "自動ふぁぼ研究",
-          maxLevel: 5,
-          costs: [1, 2, 4, 7, 11],
+          maxLevel: BASE_SKILL_MAX_LEVEL,
+          baseCost: 1,
+          costStep: 1,
+          costCurve: 0.012,
           type: "autoMultiplier",
           target: "自動増加",
           effectText: "自動増加にレベルごとに+10%の倍率がかかります。",
@@ -1943,8 +2044,10 @@
         {
           id: "tapMultiplier",
           name: "なで力研究",
-          maxLevel: 5,
-          costs: [1, 2, 4, 7, 11],
+          maxLevel: BASE_SKILL_MAX_LEVEL,
+          baseCost: 1,
+          costStep: 1,
+          costCurve: 0.012,
           type: "tapMultiplier",
           target: "タップ増加",
           effectText: "タップ増加にレベルごとに+10%の倍率がかかります。",
@@ -1952,8 +2055,10 @@
         {
           id: "savingTapBoost",
           name: "想いの貯蓄",
-          maxLevel: 5,
-          costs: [2, 4, 7, 11, 16],
+          maxLevel: BASE_SKILL_MAX_LEVEL,
+          baseCost: 2,
+          costStep: 1,
+          costCurve: 0.014,
           type: "savingTapBoost",
           target: "タップ増加",
           effectText: "所持ふぁぼ度が多いほど、タップ増加に一時的な倍率がかかります。",
@@ -1961,8 +2066,10 @@
         {
           id: "autoCollectionBoost",
           name: "自動コレクション",
-          maxLevel: 5,
-          costs: [2, 4, 8, 13, 19],
+          maxLevel: BASE_SKILL_MAX_LEVEL,
+          baseCost: 2,
+          costStep: 2,
+          costCurve: 0.016,
           type: "autoCollectionBoost",
           target: "自動増加",
           effectText: "自動強化アイテムの所持数10個ごとに、自動増加に倍率がかかります。",
@@ -1970,8 +2077,10 @@
         {
           id: "tapCollectionBoost",
           name: "タップコレクション",
-          maxLevel: 5,
-          costs: [2, 4, 8, 13, 19],
+          maxLevel: BASE_SKILL_MAX_LEVEL,
+          baseCost: 2,
+          costStep: 2,
+          costCurve: 0.016,
           type: "tapCollectionBoost",
           target: "タップ増加",
           effectText:
@@ -1979,8 +2088,23 @@
         },
       ];
 
+      const INFINITE_AUTO_SKILL = {
+        id: "infiniteAutoBoost",
+        name: "永劫のふぁぼ循環",
+        maxLevel: null,
+        baseCost: 50,
+        costStep: 5,
+        costCurve: 0.03,
+        type: "infiniteAutoBoost",
+        target: "自動増加",
+        effectText:
+          "全ての基本スキルがLv.999になると解放されます。強化するたび、自動増加に+1%の倍率がかかります。",
+      };
+
+      const ALL_SKILLS = [...BASE_SKILLS, INFINITE_AUTO_SKILL];
+
       const THEME_MAP = Object.fromEntries(THEMES.map((theme) => [theme.id, theme]));
-      const SKILL_MAP = Object.fromEntries(SKILLS.map((skill) => [skill.id, skill]));
+      const SKILL_MAP = Object.fromEntries(ALL_SKILLS.map((skill) => [skill.id, skill]));
 
       const reloadButton = document.getElementById("reloadButton");
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -2018,6 +2142,7 @@
       const tapCountEl = document.getElementById("tapCount");
       const maxAffectionRecordEl = document.getElementById("maxAffectionRecord");
       const totalItemCountEl = document.getElementById("totalItemCount");
+      const totalItemBreakdownEl = document.getElementById("totalItemBreakdown");
       const loveCrystalCountEl = document.getElementById("loveCrystalCount");
 
       const themeSelect = document.getElementById("themeSelect");
@@ -2051,8 +2176,8 @@
           id: `auto_${number}`,
           number,
           rank,
-          legacyNumber: getLegacyScaledItemNumber(number),
-          name: `ダミー自動アイテム ${String(number).padStart(3, "0")}`,
+          name:
+            AUTO_ITEM_NAMES[index] || `自動アイテム ${String(number).padStart(3, "0")}`,
           unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
           baseCost: getAutoBaseCostByNumber(number),
           production: getAutoProductionByNumber(number),
@@ -2068,8 +2193,7 @@
           id: `tap_${number}`,
           number,
           rank,
-          legacyNumber: getLegacyScaledItemNumber(number),
-          name: `ダミータップ強化 ${String(number).padStart(3, "0")}`,
+          name: TAP_ITEM_NAMES[index] || `タップ強化 ${String(number).padStart(3, "0")}`,
           unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
           baseCost: getTapBaseCostByNumber(number),
           tapBonus: getTapBonusByNumber(number),
@@ -2155,7 +2279,7 @@
 
       function createDefaultState() {
         return {
-          version: 5,
+          version: 6,
           affection: 0n,
           totalAffection: 0n,
           bestAffection: 0n,
@@ -2475,21 +2599,45 @@
         state.skills[skillId] = Math.max(0, Math.floor(Number(level) || 0));
       }
 
+      function isInfiniteSkill(skill) {
+        return skill && skill.maxLevel === null;
+      }
+
+      function isBaseSkillMaxed(skill) {
+        return getSkillLevel(skill.id) >= skill.maxLevel;
+      }
+
+      function isInfiniteAutoSkillUnlocked() {
+        return BASE_SKILLS.every((skill) => isBaseSkillMaxed(skill));
+      }
+
       function getSkillUpgradeCost(skill) {
         const level = getSkillLevel(skill.id);
 
-        if (level >= skill.maxLevel) {
+        if (!isInfiniteSkill(skill) && level >= skill.maxLevel) {
           return 0n;
         }
 
-        return BigInt(skill.costs[level] || 0);
+        const nextLevel = level + 1;
+        const base = BigInt(skill.baseCost || 1);
+        const linear = BigInt(Math.floor(nextLevel * (skill.costStep || 1)));
+        const curve = BigInt(
+          Math.floor(Math.pow(nextLevel, 1.35) * (skill.costCurve || 0)),
+        );
+
+        return base + linear + curve;
       }
 
       function canUpgradeSkill(skill) {
-        const level = getSkillLevel(skill.id);
-        const cost = getSkillUpgradeCost(skill);
+        if (skill.id === INFINITE_AUTO_SKILL.id && !isInfiniteAutoSkillUnlocked()) {
+          return false;
+        }
 
-        return level < skill.maxLevel && state.loveCrystals >= cost;
+        if (!isInfiniteSkill(skill) && getSkillLevel(skill.id) >= skill.maxLevel) {
+          return false;
+        }
+
+        return state.loveCrystals >= getSkillUpgradeCost(skill);
       }
 
       function getTotalActiveAutoItemCount() {
@@ -2527,7 +2675,11 @@
 
         const digitCount = state.affection.toString().length;
         const unitTier = Math.floor((digitCount - 1) / 4);
-        return Math.min(150, unitTier * level * 2);
+        return Math.min(999999, unitTier * level * 2);
+      }
+
+      function getInfiniteAutoBoostPercent() {
+        return getSkillLevel(INFINITE_AUTO_SKILL.id);
       }
 
       function getAutoMultiplierPercent() {
@@ -2535,8 +2687,9 @@
         const collectionLevel = getSkillLevel("autoCollectionBoost");
         const collectionBonus =
           Math.floor(Number(getTotalAutoItemCountForBonus() / 10n)) * collectionLevel;
+        const infiniteBonus = getInfiniteAutoBoostPercent();
 
-        return 100 + coreBonus + collectionBonus;
+        return 100 + coreBonus + collectionBonus + infiniteBonus;
       }
 
       function getTapMultiplierPercent() {
@@ -2576,13 +2729,17 @@
           return `現在効果：タップ強化アイテム10個ごとに倍率上昇 / 現在 +${currentBonus}%`;
         }
 
+        if (skill.type === "infiniteAutoBoost") {
+          return `現在効果：自動増加 +${level}%`;
+        }
+
         return "";
       }
 
       function getSkillNextEffectText(skill) {
         const level = getSkillLevel(skill.id);
 
-        if (level >= skill.maxLevel) {
+        if (!isInfiniteSkill(skill) && level >= skill.maxLevel) {
           return "次の強化：最大レベル到達済み";
         }
 
@@ -2606,6 +2763,10 @@
 
         if (skill.type === "tapCollectionBoost") {
           return `次の強化：タップ強化アイテム10個ごとの倍率がLv.${nextLevel}相当に上昇`;
+        }
+
+        if (skill.type === "infiniteAutoBoost") {
+          return `次の強化：自動増加 +${nextLevel}%`;
         }
 
         return "";
@@ -2728,6 +2889,7 @@
 
         state.affection -= cost;
         state.lovePoints += 1n;
+        state.loveCrystals += 1n;
 
         updateAll();
         saveLocal();
@@ -3018,12 +3180,12 @@
 
         if (item.type === "auto") {
           elements.detailEl.textContent =
-            `ランク${item.rank} / 旧${item.legacyNumber}相当 / 所持数: ${formatLargeNumber(count)} / ` +
+            `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / ` +
             `所持倍率: ${formatMultiplierFromPercent(selfPercent)} / ` +
             `現在 +${formatLargeNumber(currentEffect)}/秒 / 次回 +${formatLargeNumber(nextGain)}/秒`;
         } else {
           elements.detailEl.textContent =
-            `ランク${item.rank} / 旧${item.legacyNumber}相当 / 所持数: ${formatLargeNumber(count)} / ` +
+            `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / ` +
             `所持倍率: ${formatMultiplierFromPercent(selfPercent)} / ` +
             `現在 +${formatLargeNumber(currentEffect)} / 次回 +${formatLargeNumber(nextGain)}`;
         }
@@ -3123,9 +3285,74 @@
         return lines.filter(Boolean).join("\n");
       }
 
+      function createSkillCard(skill, isLocked = false) {
+        const level = getSkillLevel(skill.id);
+        const isMax = !isInfiniteSkill(skill) && level >= skill.maxLevel;
+        const cost = getSkillUpgradeCost(skill);
+        const canBuy = canUpgradeSkill(skill);
+
+        const card = document.createElement("div");
+        card.className = "skill-card";
+        card.classList.toggle("is-locked", isLocked);
+
+        const header = document.createElement("div");
+        header.className = "skill-card-header";
+
+        const name = document.createElement("div");
+        name.className = "skill-name";
+        name.textContent = skill.name;
+
+        const levelEl = document.createElement("div");
+        levelEl.className = "skill-level";
+        levelEl.textContent = isInfiniteSkill(skill)
+          ? `Lv.${formatLargeNumber(level)}`
+          : `Lv.${level}/${skill.maxLevel}`;
+
+        const detail = document.createElement("div");
+        detail.className = "skill-detail";
+
+        if (isLocked) {
+          detail.innerHTML =
+            `対象：${skill.target}<br>` +
+            "解放条件：全ての基本スキルをLv.999にする<br>" +
+            skill.effectText;
+        } else {
+          detail.innerHTML = getSkillDescription(skill).replace(/\n/g, "<br>");
+        }
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "skill-buy-button";
+        button.disabled = !canBuy;
+
+        if (isLocked) {
+          button.textContent = "未解放";
+        } else if (isMax) {
+          button.textContent = "最大強化済み";
+        } else if (canBuy) {
+          button.textContent = `${SKILL_RESOURCE_NAME} ${formatLargeNumber(cost)}個で強化`;
+        } else {
+          button.textContent = `${SKILL_RESOURCE_NAME}不足：必要 ${formatLargeNumber(cost)}個`;
+        }
+
+        button.addEventListener("click", () => {
+          buySkill(skill.id);
+        });
+
+        header.appendChild(name);
+        header.appendChild(levelEl);
+
+        card.appendChild(header);
+        card.appendChild(detail);
+        card.appendChild(button);
+
+        return card;
+      }
+
       function updateSkillTreeArea() {
         const autoPercent = getAutoMultiplierPercent();
         const tapPercent = getTapMultiplierPercent();
+        const infiniteUnlocked = isInfiniteAutoSkillUnlocked();
 
         skillInfoEl.innerHTML =
           `${SKILL_RESOURCE_NAME}: ${formatLargeNumber(state.loveCrystals)}個<br>` +
@@ -3133,56 +3360,11 @@
 
         skillListEl.innerHTML = "";
 
-        for (const skill of SKILLS) {
-          const level = getSkillLevel(skill.id);
-          const isMax = level >= skill.maxLevel;
-          const cost = getSkillUpgradeCost(skill);
-          const canBuy = canUpgradeSkill(skill);
-
-          const card = document.createElement("div");
-          card.className = "skill-card";
-
-          const header = document.createElement("div");
-          header.className = "skill-card-header";
-
-          const name = document.createElement("div");
-          name.className = "skill-name";
-          name.textContent = skill.name;
-
-          const levelEl = document.createElement("div");
-          levelEl.className = "skill-level";
-          levelEl.textContent = `Lv.${level}/${skill.maxLevel}`;
-
-          const detail = document.createElement("div");
-          detail.className = "skill-detail";
-          detail.innerHTML = getSkillDescription(skill).replace(/\n/g, "<br>");
-
-          const button = document.createElement("button");
-          button.type = "button";
-          button.className = "skill-buy-button";
-          button.disabled = !canBuy;
-
-          if (isMax) {
-            button.textContent = "最大強化済み";
-          } else if (canBuy) {
-            button.textContent = `${SKILL_RESOURCE_NAME} ${formatLargeNumber(cost)}個で強化`;
-          } else {
-            button.textContent = `${SKILL_RESOURCE_NAME}不足：必要 ${formatLargeNumber(cost)}個`;
-          }
-
-          button.addEventListener("click", () => {
-            buySkill(skill.id);
-          });
-
-          header.appendChild(name);
-          header.appendChild(levelEl);
-
-          card.appendChild(header);
-          card.appendChild(detail);
-          card.appendChild(button);
-
-          skillListEl.appendChild(card);
+        for (const skill of BASE_SKILLS) {
+          skillListEl.appendChild(createSkillCard(skill));
         }
+
+        skillListEl.appendChild(createSkillCard(INFINITE_AUTO_SKILL, !infiniteUnlocked));
       }
 
       function updateLoveArea() {
@@ -3201,7 +3383,7 @@
 
         loveOfferButton.disabled = !canOffer;
         loveOfferButton.textContent = canOffer
-          ? "ふぁぼ度を捧げる（愛情 +1）"
+          ? `ふぁぼ度を捧げる（愛情 +1 / ${SKILL_RESOURCE_NAME} +1）`
           : "ふぁぼ度が足りません";
 
         loveOfferMiniButton.disabled = !canOffer;
@@ -3215,9 +3397,24 @@
         maxAffectionRecordEl.textContent = formatLargeNumber(state.bestAffection);
         maxAffectionRecordEl.title = formatFullNumber(state.bestAffection);
 
-        const totalItemCount = getTotalPurchasedItemCount();
+        const activeAutoItemCount = getTotalActiveAutoItemCount();
+        const activeTapItemCount = getTotalActiveTapItemCount();
+        const activeTotalItemCount = activeAutoItemCount + activeTapItemCount;
+
+        const legacyAutoItemCount = state.legacyAutoItemCount;
+        const legacyTapItemCount = state.legacyTapItemCount;
+        const legacyTotalItemCount = legacyAutoItemCount + legacyTapItemCount;
+
+        const totalItemCount = activeTotalItemCount + legacyTotalItemCount;
+
         totalItemCountEl.textContent = formatLargeNumber(totalItemCount);
         totalItemCountEl.title = formatFullNumber(totalItemCount);
+
+        totalItemBreakdownEl.innerHTML =
+          `現バージョン 1〜20：${formatLargeNumber(activeTotalItemCount)}個` +
+          `（自動 ${formatLargeNumber(activeAutoItemCount)} / タップ ${formatLargeNumber(activeTapItemCount)}）<br>` +
+          `旧バージョン 21〜999：${formatLargeNumber(legacyTotalItemCount)}個` +
+          `（自動 ${formatLargeNumber(legacyAutoItemCount)} / タップ ${formatLargeNumber(legacyTapItemCount)}）`;
 
         loveCrystalCountEl.textContent = formatLargeNumber(state.loveCrystals);
         loveCrystalCountEl.title = formatFullNumber(state.loveCrystals);
@@ -3321,7 +3518,7 @@
 
       function serializeState() {
         return {
-          version: 5,
+          version: 6,
           affection: state.affection.toString(),
           totalAffection: state.totalAffection.toString(),
           bestAffection: state.bestAffection.toString(),
@@ -3402,9 +3599,14 @@
         const cleanSkills = {};
 
         if (data && typeof data === "object") {
-          for (const skill of SKILLS) {
+          for (const skill of ALL_SKILLS) {
             const level = Math.max(0, Math.floor(Number(data[skill.id]) || 0));
-            cleanSkills[skill.id] = Math.min(skill.maxLevel, level);
+
+            if (isInfiniteSkill(skill)) {
+              cleanSkills[skill.id] = level;
+            } else {
+              cleanSkills[skill.id] = Math.min(skill.maxLevel, level);
+            }
           }
         }
 
@@ -3427,7 +3629,7 @@
 
         const shouldConvertOverflowItems = sourceVersion < 5 || !hasLegacyBonusFields;
 
-        cleanData.version = 5;
+        cleanData.version = 6;
         cleanData.affection = parseBigIntValue(data.affection);
         cleanData.totalAffection = parseBigIntValue(data.totalAffection);
         cleanData.bestAffection = maxBigInt(
