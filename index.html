@@ -129,6 +129,7 @@
         display: block;
         width: 2400px;
         height: 240px;
+        overflow: visible;
       }
 
       .decor-stream-a {
@@ -148,22 +149,52 @@
         animation: decorMoveLeft 68s linear infinite;
       }
 
-      .decor-line {
+      .decor-stream-a svg {
+        animation: decorCanvasWobbleA 8.5s ease-in-out infinite alternate;
+      }
+
+      .decor-stream-b svg {
+        animation: decorCanvasWobbleB 10.5s ease-in-out infinite alternate;
+      }
+
+      .decor-stream-c svg {
+        animation: decorCanvasWobbleC 12s ease-in-out infinite alternate;
+      }
+
+      .decor-line-xl,
+      .decor-line-lg,
+      .decor-line-md,
+      .decor-line-sm,
+      .decor-line-xs {
         fill: none;
         stroke: var(--accent);
-        stroke-width: 5;
         stroke-linecap: round;
         stroke-linejoin: round;
+      }
+
+      .decor-line-xl {
+        stroke-width: 8.5;
+        opacity: 0.2;
+      }
+
+      .decor-line-lg {
+        stroke-width: 6.5;
+        opacity: 0.28;
+      }
+
+      .decor-line-md {
+        stroke-width: 4.25;
         opacity: 0.34;
       }
 
-      .decor-line-thin {
-        fill: none;
-        stroke: var(--accent);
-        stroke-width: 2.5;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      .decor-line-sm {
+        stroke-width: 2.35;
         opacity: 0.28;
+      }
+
+      .decor-line-xs {
+        stroke-width: 1.2;
+        opacity: 0.22;
       }
 
       .decor-fill {
@@ -171,11 +202,67 @@
         opacity: 0.16;
       }
 
-      .decor-stroke {
+      .decor-stroke-xl,
+      .decor-stroke-lg,
+      .decor-stroke-md,
+      .decor-stroke-sm {
         fill: none;
         stroke: var(--accent);
-        stroke-width: 4;
+      }
+
+      .decor-stroke-xl {
+        stroke-width: 7;
+        opacity: 0.18;
+      }
+
+      .decor-stroke-lg {
+        stroke-width: 5;
+        opacity: 0.2;
+      }
+
+      .decor-stroke-md {
+        stroke-width: 3.25;
         opacity: 0.22;
+      }
+
+      .decor-stroke-sm {
+        stroke-width: 1.75;
+        opacity: 0.18;
+      }
+
+      .decor-sway-a,
+      .decor-sway-b,
+      .decor-sway-c,
+      .decor-sway-d,
+      .decor-sway-e,
+      .decor-sway-f {
+        transform-box: fill-box;
+        transform-origin: center;
+        will-change: transform;
+      }
+
+      .decor-sway-a {
+        animation: decorSwayA 5.8s ease-in-out infinite alternate;
+      }
+
+      .decor-sway-b {
+        animation: decorSwayB 7.2s ease-in-out infinite alternate;
+      }
+
+      .decor-sway-c {
+        animation: decorSwayC 6.4s ease-in-out infinite alternate;
+      }
+
+      .decor-sway-d {
+        animation: decorSwayD 8.6s ease-in-out infinite alternate;
+      }
+
+      .decor-sway-e {
+        animation: decorSwayE 9.4s ease-in-out infinite alternate;
+      }
+
+      .decor-sway-f {
+        animation: decorSwayF 11s ease-in-out infinite alternate;
       }
 
       .app {
@@ -214,9 +301,45 @@
         transform: scale(0.94) rotate(18deg);
       }
 
+      .daily-popup-stack {
+        position: fixed;
+        top: max(12px, env(safe-area-inset-top));
+        left: 50%;
+        z-index: 90;
+        width: min(92vw, 420px);
+        display: grid;
+        gap: 8px;
+        pointer-events: none;
+        transform: translateX(-50%);
+      }
+
+      .daily-popup {
+        padding: 10px 12px;
+        border-radius: 16px;
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
+        color: var(--text);
+        box-shadow: 0 8px 22px var(--strong-shadow);
+        border: 1px solid var(--border);
+        backdrop-filter: blur(4px);
+        animation: dailyPopupIn 360ms ease-out both;
+      }
+
+      .daily-popup-title {
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--accent);
+      }
+
+      .daily-popup-detail {
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--text);
+      }
+
       .touch-area {
         height: 34svh;
-        min-height: 320px;
+        min-height: 284px;
         flex: 0 0 auto;
         padding: 10px;
         border-radius: 18px;
@@ -238,9 +361,11 @@
         padding: 8px 4px;
         border-radius: 12px;
         background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         text-align: center;
         overflow: hidden;
         box-shadow: 0 3px 10px var(--shadow);
+        backdrop-filter: blur(2px);
       }
 
       .status-label {
@@ -264,6 +389,7 @@
         padding: 6px 10px;
         border-radius: 999px;
         background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         color: var(--accent);
         font-size: 11px;
         font-weight: 700;
@@ -272,6 +398,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         box-shadow: 0 3px 10px var(--shadow);
+        backdrop-filter: blur(2px);
       }
 
       .character-row {
@@ -346,11 +473,13 @@
         padding: 8px;
         border-radius: 16px;
         background: var(--floating-panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         box-shadow: 0 3px 10px var(--shadow);
         display: flex;
         flex-direction: column;
         justify-content: center;
         gap: 8px;
+        backdrop-filter: blur(2px);
       }
 
       .love-mini-label {
@@ -388,34 +517,6 @@
         cursor: not-allowed;
       }
 
-      .tap-label {
-        flex: 0 0 auto;
-        width: 100%;
-        padding: 6px 10px;
-        border-radius: 14px;
-        background: var(--floating-panel);
-        color: var(--accent);
-        font-weight: 800;
-        text-align: center;
-        box-shadow: 0 3px 10px var(--shadow);
-        line-height: 1.25;
-      }
-
-      .tap-label-main {
-        display: block;
-        font-size: 12px;
-      }
-
-      .tap-label-value {
-        display: block;
-        margin-top: 2px;
-        font-size: 17px;
-        font-weight: 900;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
       .shop-area {
         height: 66svh;
         min-height: 420px;
@@ -423,12 +524,16 @@
         padding: 10px;
         border-radius: 18px;
         background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         box-shadow: 0 4px 14px var(--shadow);
         display: flex;
         flex-direction: column;
+        backdrop-filter: blur(2px);
       }
 
-      .shop-header {
+      .shop-header,
+      .daily-header,
+      .skill-header {
         flex: 0 0 auto;
         display: flex;
         justify-content: space-between;
@@ -438,13 +543,17 @@
         border-bottom: 1px solid var(--border);
       }
 
-      .shop-title {
+      .shop-title,
+      .daily-title,
+      .skill-title {
         font-size: 18px;
         font-weight: 800;
         white-space: nowrap;
       }
 
-      .shop-info {
+      .shop-info,
+      .daily-info,
+      .skill-info {
         font-size: 11px;
         color: var(--muted);
         text-align: right;
@@ -560,15 +669,91 @@
         line-height: 1.5;
       }
 
+      .daily-area,
+      .skill-tree-area,
       .love-area,
       .achievement-area {
         flex: 0 0 auto;
         padding: 12px;
         border-radius: 18px;
         background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         box-shadow: 0 4px 14px var(--shadow);
         display: grid;
         gap: 10px;
+        backdrop-filter: blur(2px);
+      }
+
+      .daily-list,
+      .skill-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .daily-card,
+      .skill-card,
+      .achievement-card {
+        padding: 10px;
+        border-radius: 14px;
+        background: var(--panel-soft);
+        display: grid;
+        gap: 5px;
+      }
+
+      .daily-card.is-complete {
+        outline: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+      }
+
+      .daily-card.is-claimed {
+        opacity: 0.78;
+      }
+
+      .daily-card-header,
+      .skill-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .daily-name,
+      .skill-name {
+        font-size: 13px;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .daily-status,
+      .skill-level {
+        font-size: 11px;
+        font-weight: 900;
+        color: var(--accent);
+        white-space: nowrap;
+      }
+
+      .daily-detail,
+      .skill-detail,
+      .achievement-detail {
+        font-size: 12px;
+        line-height: 1.5;
+        color: var(--muted);
+      }
+
+      .skill-buy-button {
+        width: 100%;
+        border: none;
+        border-radius: 12px;
+        padding: 9px 8px;
+        background: var(--accent);
+        color: var(--accent-contrast);
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .skill-buy-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
       }
 
       .love-header {
@@ -596,8 +781,7 @@
         text-overflow: ellipsis;
       }
 
-      .love-detail,
-      .achievement-detail {
+      .love-detail {
         font-size: 12px;
         line-height: 1.5;
         color: var(--muted);
@@ -629,14 +813,6 @@
         gap: 8px;
       }
 
-      .achievement-card {
-        padding: 10px;
-        border-radius: 14px;
-        background: var(--panel-soft);
-        display: grid;
-        gap: 4px;
-      }
-
       .achievement-label {
         font-size: 11px;
         font-weight: 800;
@@ -663,8 +839,10 @@
       .tool-panel {
         border-radius: 14px;
         background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 96%, transparent);
         box-shadow: 0 3px 10px var(--shadow);
         overflow: hidden;
+        backdrop-filter: blur(2px);
       }
 
       .tool-panel summary {
@@ -742,6 +920,18 @@
         color: var(--muted);
       }
 
+      @keyframes dailyPopupIn {
+        0% {
+          opacity: 0;
+          transform: translateY(-10px) scale(0.98);
+        }
+
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
       @keyframes decorMoveLeft {
         0% {
           transform: translate3d(0, 0, 0);
@@ -759,6 +949,132 @@
 
         100% {
           transform: translate3d(0, 0, 0);
+        }
+      }
+
+      @keyframes decorCanvasWobbleA {
+        0% {
+          transform: translateY(-5px) skewY(-0.5deg) scaleY(1);
+        }
+
+        50% {
+          transform: translateY(6px) skewY(0.7deg) scaleY(1.035);
+        }
+
+        100% {
+          transform: translateY(-2px) skewY(-0.2deg) scaleY(0.985);
+        }
+      }
+
+      @keyframes decorCanvasWobbleB {
+        0% {
+          transform: translateY(7px) skewY(0.8deg) scaleY(0.98);
+        }
+
+        50% {
+          transform: translateY(-6px) skewY(-0.6deg) scaleY(1.04);
+        }
+
+        100% {
+          transform: translateY(3px) skewY(0.35deg) scaleY(1);
+        }
+      }
+
+      @keyframes decorCanvasWobbleC {
+        0% {
+          transform: translateY(-4px) skewY(0.4deg) scaleY(1.03);
+        }
+
+        50% {
+          transform: translateY(8px) skewY(-0.7deg) scaleY(0.985);
+        }
+
+        100% {
+          transform: translateY(1px) skewY(0.2deg) scaleY(1.02);
+        }
+      }
+
+      @keyframes decorSwayA {
+        0% {
+          transform: translateY(-4px) rotate(-1.4deg) skewX(-1deg) scaleY(0.98);
+        }
+
+        50% {
+          transform: translateY(5px) rotate(1.2deg) skewX(1.8deg) scaleY(1.05);
+        }
+
+        100% {
+          transform: translateY(-1px) rotate(-0.5deg) skewX(-0.6deg) scaleY(1);
+        }
+      }
+
+      @keyframes decorSwayB {
+        0% {
+          transform: translateY(5px) rotate(1.8deg) skewX(1deg) scaleX(0.99);
+        }
+
+        50% {
+          transform: translateY(-6px) rotate(-1deg) skewX(-1.6deg) scaleX(1.04);
+        }
+
+        100% {
+          transform: translateY(2px) rotate(0.6deg) skewX(0.7deg) scaleX(1);
+        }
+      }
+
+      @keyframes decorSwayC {
+        0% {
+          transform: translate(-3px, -2px) rotate(-2deg) scale(0.98);
+        }
+
+        50% {
+          transform: translate(5px, 4px) rotate(2.4deg) scale(1.06);
+        }
+
+        100% {
+          transform: translate(1px, -1px) rotate(-0.8deg) scale(1);
+        }
+      }
+
+      @keyframes decorSwayD {
+        0% {
+          transform: translate(2px, 5px) rotate(2deg) skewY(0.8deg);
+        }
+
+        50% {
+          transform: translate(-5px, -4px) rotate(-2.2deg) skewY(-1.4deg);
+        }
+
+        100% {
+          transform: translate(1px, 2px) rotate(0.4deg) skewY(0.2deg);
+        }
+      }
+
+      @keyframes decorSwayE {
+        0% {
+          transform: translateY(-3px) rotate(0.8deg) scaleX(1.04);
+        }
+
+        50% {
+          transform: translateY(7px) rotate(-1.6deg) scaleX(0.96);
+        }
+
+        100% {
+          transform: translateY(0) rotate(0.4deg) scaleX(1);
+        }
+      }
+
+      @keyframes decorSwayF {
+        0% {
+          transform: translate(-2px, 4px) rotate(-0.8deg) skewX(1.2deg);
+        }
+
+        50% {
+          transform: translate(4px, -6px) rotate(1.8deg) skewX(-1deg);
+        }
+
+        100% {
+          transform: translate(0, 1px) rotate(0.2deg) skewX(0.3deg);
         }
       }
 
@@ -810,6 +1126,13 @@
 
       @media (prefers-reduced-motion: reduce) {
         .decor-stream,
+        .decor-stream svg,
+        .decor-sway-a,
+        .decor-sway-b,
+        .decor-sway-c,
+        .decor-sway-d,
+        .decor-sway-e,
+        .decor-sway-f,
         .background-decoration::before,
         .background-decoration::after,
         .character-visual,
@@ -821,51 +1144,57 @@
   </head>
 
   <body>
+    <div id="dailyPopupStack" class="daily-popup-stack" aria-live="polite"></div>
+
     <div class="background-decoration" aria-hidden="true">
       <div class="decor-stream decor-stream-a">
         <svg viewBox="0 0 2400 240" preserveAspectRatio="none">
           <g>
             <path
-              class="decor-line"
+              class="decor-line-lg decor-sway-a"
               d="M20 150 C140 60 220 220 340 130 S560 50 680 130 S900 220 1020 120 S1160 70 1200 105"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-xs decor-sway-b"
               d="M0 62 C180 10 240 116 390 74 S640 26 780 86 S980 142 1200 42"
             />
-            <circle class="decor-fill" cx="160" cy="70" r="18" />
-            <circle class="decor-stroke" cx="470" cy="164" r="28" />
+            <circle class="decor-fill decor-sway-c" cx="160" cy="70" r="18" />
+            <circle class="decor-stroke-xl decor-sway-d" cx="470" cy="164" r="28" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-e"
               x="740"
               y="44"
               width="42"
               height="42"
               rx="14"
-              transform="rotate(16 761 65)"
             />
-            <path class="decor-stroke" d="M1010 162 l24 -24 l24 24 l-24 24 z" />
+            <path
+              class="decor-stroke-sm decor-sway-f"
+              d="M1010 162 l24 -24 l24 24 l-24 24 z"
+            />
 
             <path
-              class="decor-line"
+              class="decor-line-sm decor-sway-d"
               d="M1220 150 C1340 60 1420 220 1540 130 S1760 50 1880 130 S2100 220 2220 120 S2360 70 2400 105"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-xl decor-sway-e"
               d="M1200 62 C1380 10 1440 116 1590 74 S1840 26 1980 86 S2180 142 2400 42"
             />
-            <circle class="decor-fill" cx="1360" cy="70" r="18" />
-            <circle class="decor-stroke" cx="1670" cy="164" r="28" />
+            <circle class="decor-fill decor-sway-a" cx="1360" cy="70" r="18" />
+            <circle class="decor-stroke-md decor-sway-f" cx="1670" cy="164" r="28" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-b"
               x="1940"
               y="44"
               width="42"
               height="42"
               rx="14"
-              transform="rotate(16 1961 65)"
             />
-            <path class="decor-stroke" d="M2210 162 l24 -24 l24 24 l-24 24 z" />
+            <path
+              class="decor-stroke-lg decor-sway-c"
+              d="M2210 162 l24 -24 l24 24 l-24 24 z"
+            />
           </g>
         </svg>
       </div>
@@ -874,46 +1203,50 @@
         <svg viewBox="0 0 2400 240" preserveAspectRatio="none">
           <g>
             <path
-              class="decor-line"
+              class="decor-line-xl decor-sway-c"
               d="M10 108 C130 188 250 38 390 116 S660 206 810 98 S1060 44 1200 132"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-sm decor-sway-a"
               d="M40 190 C220 128 330 214 520 162 S800 82 950 144 S1100 198 1200 170"
             />
-            <circle class="decor-stroke" cx="210" cy="132" r="22" />
+            <circle class="decor-stroke-sm decor-sway-e" cx="210" cy="132" r="22" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-f"
               x="530"
               y="58"
               width="34"
               height="34"
               rx="11"
-              transform="rotate(-22 547 75)"
             />
-            <circle class="decor-fill" cx="910" cy="178" r="16" />
-            <path class="decor-stroke" d="M1080 58 C1110 30 1150 30 1180 58" />
+            <circle class="decor-fill decor-sway-b" cx="910" cy="178" r="16" />
+            <path
+              class="decor-stroke-md decor-sway-d"
+              d="M1080 58 C1110 30 1150 30 1180 58"
+            />
 
             <path
-              class="decor-line"
+              class="decor-line-xs decor-sway-f"
               d="M1210 108 C1330 188 1450 38 1590 116 S1860 206 2010 98 S2260 44 2400 132"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-md decor-sway-b"
               d="M1240 190 C1420 128 1530 214 1720 162 S2000 82 2150 144 S2300 198 2400 170"
             />
-            <circle class="decor-stroke" cx="1410" cy="132" r="22" />
+            <circle class="decor-stroke-lg decor-sway-a" cx="1410" cy="132" r="22" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-d"
               x="1730"
               y="58"
               width="34"
               height="34"
               rx="11"
-              transform="rotate(-22 1747 75)"
             />
-            <circle class="decor-fill" cx="2110" cy="178" r="16" />
-            <path class="decor-stroke" d="M2280 58 C2310 30 2350 30 2380 58" />
+            <circle class="decor-fill decor-sway-c" cx="2110" cy="178" r="16" />
+            <path
+              class="decor-stroke-xl decor-sway-e"
+              d="M2280 58 C2310 30 2350 30 2380 58"
+            />
           </g>
         </svg>
       </div>
@@ -922,46 +1255,50 @@
         <svg viewBox="0 0 2400 240" preserveAspectRatio="none">
           <g>
             <path
-              class="decor-line"
+              class="decor-line-md decor-sway-e"
               d="M0 140 C130 98 210 170 330 128 S520 46 650 92 S860 188 1010 126 S1140 88 1200 112"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-lg decor-sway-f"
               d="M80 58 C210 18 310 98 450 62 S660 38 760 102 S980 196 1200 150"
             />
-            <circle class="decor-fill" cx="115" cy="158" r="20" />
-            <circle class="decor-stroke" cx="390" cy="72" r="24" />
+            <circle class="decor-fill decor-sway-a" cx="115" cy="158" r="20" />
+            <circle class="decor-stroke-md decor-sway-c" cx="390" cy="72" r="24" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-b"
               x="690"
               y="156"
               width="46"
               height="46"
               rx="16"
-              transform="rotate(30 713 179)"
             />
-            <path class="decor-stroke" d="M980 70 l18 -30 l18 30 l-18 30 z" />
+            <path
+              class="decor-stroke-sm decor-sway-d"
+              d="M980 70 l18 -30 l18 30 l-18 30 z"
+            />
 
             <path
-              class="decor-line"
+              class="decor-line-xs decor-sway-b"
               d="M1200 140 C1330 98 1410 170 1530 128 S1720 46 1850 92 S2060 188 2210 126 S2340 88 2400 112"
             />
             <path
-              class="decor-line-thin"
+              class="decor-line-sm decor-sway-d"
               d="M1280 58 C1410 18 1510 98 1650 62 S1860 38 1960 102 S2180 196 2400 150"
             />
-            <circle class="decor-fill" cx="1315" cy="158" r="20" />
-            <circle class="decor-stroke" cx="1590" cy="72" r="24" />
+            <circle class="decor-fill decor-sway-f" cx="1315" cy="158" r="20" />
+            <circle class="decor-stroke-xl decor-sway-e" cx="1590" cy="72" r="24" />
             <rect
-              class="decor-fill"
+              class="decor-fill decor-sway-c"
               x="1890"
               y="156"
               width="46"
               height="46"
               rx="16"
-              transform="rotate(30 1913 179)"
             />
-            <path class="decor-stroke" d="M2180 70 l18 -30 l18 30 l-18 30 z" />
+            <path
+              class="decor-stroke-lg decor-sway-a"
+              d="M2180 70 l18 -30 l18 30 l-18 30 z"
+            />
           </g>
         </svg>
       </div>
@@ -1026,11 +1363,6 @@
             </button>
           </section>
         </div>
-
-        <div id="tapLabel" class="tap-label">
-          <span class="tap-label-main">タップでなでる</span>
-          <span id="tapGainLabel" class="tap-label-value">+1</span>
-        </div>
       </section>
 
       <section class="shop-area">
@@ -1056,6 +1388,34 @@
         </div>
 
         <div id="shopList" class="shop-list"></div>
+      </section>
+
+      <section class="daily-area">
+        <div class="daily-header">
+          <div class="daily-title">デイリーミッション</div>
+          <div id="dailyInfo" class="daily-info"></div>
+        </div>
+
+        <div id="dailyMissionList" class="daily-list"></div>
+
+        <div class="daily-detail">
+          毎日0時に更新されます。達成した報酬は自動で受け取ります。
+        </div>
+      </section>
+
+      <section class="skill-tree-area">
+        <div class="skill-header">
+          <div class="skill-title">スキルツリー</div>
+          <div id="skillInfo" class="skill-info"></div>
+        </div>
+
+        <div id="skillList" class="skill-list"></div>
+
+        <div class="skill-detail">
+          愛の結晶を消費して、ふぁぼ度の増加量に倍率をかけます。
+          各ショップアイテムは、同一アイテムの所持数10個ごとに、そのアイテム自身の効果が+10%されます。
+          旧バージョンで21番以降のアイテムを所持していた場合、その効果は補填ボーナスとして維持されます。
+        </div>
       </section>
 
       <section class="love-area">
@@ -1094,10 +1454,16 @@
             <div class="achievement-label">全購入アイテム所持数</div>
             <div id="totalItemCount" class="achievement-value">0</div>
           </div>
+
+          <div class="achievement-card">
+            <div class="achievement-label">愛の結晶</div>
+            <div id="loveCrystalCount" class="achievement-value">0</div>
+          </div>
         </div>
 
         <div class="achievement-detail">
           全購入アイテム所持数は、自動増加アイテムとタップ強化アイテムの合計です。
+          旧バージョンで21番以降のアイテムを所持していた場合、その所持数も合計に含まれます。
         </div>
       </section>
 
@@ -1213,8 +1579,9 @@
     </main>
 
     <script>
-      const SAVE_KEY = "affection_clicker_save_v4";
+      const SAVE_KEY = "affection_clicker_save_v5";
       const OLD_SAVE_KEYS = [
+        "affection_clicker_save_v4",
         "affection_clicker_save_v3",
         "affection_clicker_save_v2",
         "affection_clicker_save_v1",
@@ -1226,19 +1593,29 @@
       const DEFAULT_CHARACTER_IMAGE_SRC = "assets/chara.png";
       const DEFAULT_THEME_ID = "milkTea";
 
-      const MAX_SHOP_ITEMS = 999;
-      const ITEMS_PER_RANK = 20;
+      const MAX_SHOP_ITEMS = 20;
+      const LEGACY_MAX_SHOP_ITEM_NUMBER = 999;
+      const LEGACY_ITEM_SCALE_POWER = 1.6;
+      const ITEMS_PER_RANK = 5;
+
+      const ITEM_SELF_BONUS_STEP_COUNT = 10;
+      const ITEM_SELF_BONUS_PERCENT_PER_STEP = 10;
 
       const TAP_AUTO_FLOOR_NUMERATOR = 25n;
       const TAP_AUTO_FLOOR_DENOMINATOR = 100n;
 
       const OFFLINE_PROGRESS_MAX_SECONDS = 48 * 60 * 60;
       const OFFLINE_NOTICE_VISIBLE_MS = 10000;
+      const DAILY_POPUP_VISIBLE_MS = 5200;
 
       const CHARACTER_IMAGE_MAX_SIZE = 1200;
       const CHARACTER_IMAGE_QUALITY = 0.9;
 
       const LOVE_BASE_COST = 10n ** 68n;
+
+      const DAILY_CORE_MISSION_IDS = ["autoBulkOnce", "tapBulkOnce", "tap50", "tap100"];
+
+      const SKILL_RESOURCE_NAME = "愛の結晶";
 
       const LARGE_UNITS = [
         "",
@@ -1553,10 +1930,62 @@
         },
       ];
 
+      const SKILLS = [
+        {
+          id: "autoMultiplier",
+          name: "自動ふぁぼ研究",
+          maxLevel: 5,
+          costs: [1, 2, 4, 7, 11],
+          type: "autoMultiplier",
+          target: "自動増加",
+          effectText: "自動増加にレベルごとに+10%の倍率がかかります。",
+        },
+        {
+          id: "tapMultiplier",
+          name: "なで力研究",
+          maxLevel: 5,
+          costs: [1, 2, 4, 7, 11],
+          type: "tapMultiplier",
+          target: "タップ増加",
+          effectText: "タップ増加にレベルごとに+10%の倍率がかかります。",
+        },
+        {
+          id: "savingTapBoost",
+          name: "想いの貯蓄",
+          maxLevel: 5,
+          costs: [2, 4, 7, 11, 16],
+          type: "savingTapBoost",
+          target: "タップ増加",
+          effectText: "所持ふぁぼ度が多いほど、タップ増加に一時的な倍率がかかります。",
+        },
+        {
+          id: "autoCollectionBoost",
+          name: "自動コレクション",
+          maxLevel: 5,
+          costs: [2, 4, 8, 13, 19],
+          type: "autoCollectionBoost",
+          target: "自動増加",
+          effectText: "自動強化アイテムの所持数10個ごとに、自動増加に倍率がかかります。",
+        },
+        {
+          id: "tapCollectionBoost",
+          name: "タップコレクション",
+          maxLevel: 5,
+          costs: [2, 4, 8, 13, 19],
+          type: "tapCollectionBoost",
+          target: "タップ増加",
+          effectText:
+            "タップ強化アイテムの所持数10個ごとに、タップ増加に倍率がかかります。",
+        },
+      ];
+
       const THEME_MAP = Object.fromEntries(THEMES.map((theme) => [theme.id, theme]));
+      const SKILL_MAP = Object.fromEntries(SKILLS.map((skill) => [skill.id, skill]));
 
       const reloadButton = document.getElementById("reloadButton");
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+
+      const dailyPopupStack = document.getElementById("dailyPopupStack");
 
       const affectionEl = document.getElementById("affection");
       const tapPowerEl = document.getElementById("tapPower");
@@ -1565,7 +1994,6 @@
       const characterImageEl = document.getElementById("characterImage");
       const characterPlaceholderEl = document.getElementById("characterPlaceholder");
       const characterBounceEl = document.getElementById("characterBounce");
-      const tapGainLabelEl = document.getElementById("tapGainLabel");
       const offlineNoticeEl = document.getElementById("offlineNotice");
 
       const shopListEl = document.getElementById("shopList");
@@ -1574,6 +2002,12 @@
       const tapShopTab = document.getElementById("tapShopTab");
       const bulkBuyAutoButton = document.getElementById("bulkBuyAutoButton");
       const bulkBuyTapButton = document.getElementById("bulkBuyTapButton");
+
+      const dailyInfoEl = document.getElementById("dailyInfo");
+      const dailyMissionListEl = document.getElementById("dailyMissionList");
+
+      const skillInfoEl = document.getElementById("skillInfo");
+      const skillListEl = document.getElementById("skillList");
 
       const lovePointsEl = document.getElementById("lovePoints");
       const lovePointsMiniEl = document.getElementById("lovePointsMini");
@@ -1584,6 +2018,7 @@
       const tapCountEl = document.getElementById("tapCount");
       const maxAffectionRecordEl = document.getElementById("maxAffectionRecord");
       const totalItemCountEl = document.getElementById("totalItemCount");
+      const loveCrystalCountEl = document.getElementById("loveCrystalCount");
 
       const themeSelect = document.getElementById("themeSelect");
       const changeCharacterImageButton = document.getElementById(
@@ -1616,10 +2051,11 @@
           id: `auto_${number}`,
           number,
           rank,
+          legacyNumber: getLegacyScaledItemNumber(number),
           name: `ダミー自動アイテム ${String(number).padStart(3, "0")}`,
           unlockAt: rank === 1 ? 0 : Math.floor(50 * Math.pow(rank - 1, 2.35)),
-          baseCost: Math.floor(8 + Math.pow(number, 1.28) * 7),
-          production: Math.floor((number * (number + 1)) / 2),
+          baseCost: getAutoBaseCostByNumber(number),
+          production: getAutoProductionByNumber(number),
         };
       });
 
@@ -1632,10 +2068,11 @@
           id: `tap_${number}`,
           number,
           rank,
+          legacyNumber: getLegacyScaledItemNumber(number),
           name: `ダミータップ強化 ${String(number).padStart(3, "0")}`,
           unlockAt: Math.floor(20 + Math.pow(rank, 2.3) * 45),
-          baseCost: Math.floor(25 + Math.pow(number, 1.35) * 12),
-          tapBonus: Math.floor(number * (number + 1) + Math.pow(number, 1.2)),
+          baseCost: getTapBaseCostByNumber(number),
+          tapBonus: getTapBonusByNumber(number),
         };
       });
 
@@ -1651,16 +2088,88 @@
 
       const itemElements = new Map();
 
+      function getLegacyScaledItemNumber(number) {
+        if (number <= 1) return 1;
+        if (number >= MAX_SHOP_ITEMS) return LEGACY_MAX_SHOP_ITEM_NUMBER;
+
+        const ratio = (number - 1) / (MAX_SHOP_ITEMS - 1);
+        const scaled =
+          1 +
+          Math.pow(ratio, LEGACY_ITEM_SCALE_POWER) * (LEGACY_MAX_SHOP_ITEM_NUMBER - 1);
+
+        return Math.max(1, Math.round(scaled));
+      }
+
+      function getAutoProductionByNumber(number) {
+        const legacyNumber =
+          number > MAX_SHOP_ITEMS ? number : getLegacyScaledItemNumber(number);
+
+        return Math.floor((legacyNumber * (legacyNumber + 1)) / 2);
+      }
+
+      function getTapBonusByNumber(number) {
+        const legacyNumber =
+          number > MAX_SHOP_ITEMS ? number : getLegacyScaledItemNumber(number);
+
+        return Math.floor(
+          legacyNumber * (legacyNumber + 1) + Math.pow(legacyNumber, 1.2),
+        );
+      }
+
+      function getAutoBaseCostByNumber(number) {
+        const legacyNumber =
+          number > MAX_SHOP_ITEMS ? number : getLegacyScaledItemNumber(number);
+
+        return Math.floor(8 + Math.pow(legacyNumber, 1.28) * 7);
+      }
+
+      function getTapBaseCostByNumber(number) {
+        const legacyNumber =
+          number > MAX_SHOP_ITEMS ? number : getLegacyScaledItemNumber(number);
+
+        return Math.floor(25 + Math.pow(legacyNumber, 1.35) * 12);
+      }
+
+      function getLocalDateKey(date = new Date()) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      }
+
+      function createDefaultDailyState(dateKey = getLocalDateKey()) {
+        return {
+          dateKey,
+          autoBulkBuyCount: 0,
+          tapBulkBuyCount: 0,
+          tapCount: 0,
+          claimed: {
+            autoBulkOnce: false,
+            tapBulkOnce: false,
+            tap50: false,
+            tap100: false,
+            allComplete: false,
+          },
+        };
+      }
+
       function createDefaultState() {
         return {
-          version: 4,
+          version: 5,
           affection: 0n,
           totalAffection: 0n,
           bestAffection: 0n,
           lovePoints: 0n,
+          loveCrystals: 0n,
           tapCount: 0n,
           autoItemCounts: {},
           tapItemCounts: {},
+          legacyAutoFlatBonus: 0n,
+          legacyTapFlatBonus: 0n,
+          legacyAutoItemCount: 0n,
+          legacyTapItemCount: 0n,
+          skills: {},
+          daily: createDefaultDailyState(),
           lastSavedAt: Date.now(),
         };
       }
@@ -1747,6 +2256,10 @@
         return (a + b - 1n) / b;
       }
 
+      function applyPercent(value, percent) {
+        return (parseBigIntValue(value) * BigInt(Math.max(0, percent))) / 100n;
+      }
+
       function getOverflowSuffix(number) {
         const letters = "abcdefghijklmnopqrstuvwxyz";
 
@@ -1818,6 +2331,11 @@
         }
 
         return `${cappedSeconds}秒`;
+      }
+
+      function formatMultiplierFromPercent(percent) {
+        const fixed = (percent / 100).toFixed(2).replace(/\.?0+$/, "");
+        return `×${fixed}`;
       }
 
       function calculateGrowingCost(baseCost, count) {
@@ -1921,16 +2439,201 @@
         return calculateGrowingCost(item.baseCost, count);
       }
 
-      function getAffectionPerSecond() {
-        return autoItems.reduce((total, item) => {
-          return total + BigInt(getItemCount(item)) * BigInt(item.production);
+      function getItemSelfMultiplierPercent(count) {
+        const parsedCount = parseCountValue(count);
+        const stepCount = Math.floor(parsedCount / ITEM_SELF_BONUS_STEP_COUNT);
+        return 100 + stepCount * ITEM_SELF_BONUS_PERCENT_PER_STEP;
+      }
+
+      function getItemBaseEffect(item) {
+        if (item.type === "auto") return BigInt(item.production);
+        return BigInt(item.tapBonus);
+      }
+
+      function getItemTotalEffect(item, count) {
+        const parsedCount = parseCountValue(count);
+        if (parsedCount <= 0) return 0n;
+
+        const baseTotal = getItemBaseEffect(item) * BigInt(parsedCount);
+        return applyPercent(baseTotal, getItemSelfMultiplierPercent(parsedCount));
+      }
+
+      function getItemCurrentEffect(item) {
+        return getItemTotalEffect(item, getItemCount(item));
+      }
+
+      function getItemNextGain(item) {
+        const count = getItemCount(item);
+        return getItemTotalEffect(item, count + 1) - getItemTotalEffect(item, count);
+      }
+
+      function getSkillLevel(skillId) {
+        return Math.max(0, Math.floor(Number(state.skills[skillId]) || 0));
+      }
+
+      function setSkillLevel(skillId, level) {
+        state.skills[skillId] = Math.max(0, Math.floor(Number(level) || 0));
+      }
+
+      function getSkillUpgradeCost(skill) {
+        const level = getSkillLevel(skill.id);
+
+        if (level >= skill.maxLevel) {
+          return 0n;
+        }
+
+        return BigInt(skill.costs[level] || 0);
+      }
+
+      function canUpgradeSkill(skill) {
+        const level = getSkillLevel(skill.id);
+        const cost = getSkillUpgradeCost(skill);
+
+        return level < skill.maxLevel && state.loveCrystals >= cost;
+      }
+
+      function getTotalActiveAutoItemCount() {
+        return Object.values(state.autoItemCounts).reduce((total, count) => {
+          return total + BigInt(parseCountValue(count));
         }, 0n);
       }
 
+      function getTotalActiveTapItemCount() {
+        return Object.values(state.tapItemCounts).reduce((total, count) => {
+          return total + BigInt(parseCountValue(count));
+        }, 0n);
+      }
+
+      function getTotalAutoItemCountForBonus() {
+        return getTotalActiveAutoItemCount() + state.legacyAutoItemCount;
+      }
+
+      function getTotalTapItemCountForBonus() {
+        return getTotalActiveTapItemCount() + state.legacyTapItemCount;
+      }
+
+      function getTotalPurchasedItemCount() {
+        return (
+          getTotalActiveAutoItemCount() +
+          getTotalActiveTapItemCount() +
+          state.legacyAutoItemCount +
+          state.legacyTapItemCount
+        );
+      }
+
+      function getSavingTapBoostPercent() {
+        const level = getSkillLevel("savingTapBoost");
+        if (level <= 0 || state.affection <= 0n) return 0;
+
+        const digitCount = state.affection.toString().length;
+        const unitTier = Math.floor((digitCount - 1) / 4);
+        return Math.min(150, unitTier * level * 2);
+      }
+
+      function getAutoMultiplierPercent() {
+        const coreBonus = getSkillLevel("autoMultiplier") * 10;
+        const collectionLevel = getSkillLevel("autoCollectionBoost");
+        const collectionBonus =
+          Math.floor(Number(getTotalAutoItemCountForBonus() / 10n)) * collectionLevel;
+
+        return 100 + coreBonus + collectionBonus;
+      }
+
+      function getTapMultiplierPercent() {
+        const coreBonus = getSkillLevel("tapMultiplier") * 10;
+        const savingBonus = getSavingTapBoostPercent();
+        const collectionLevel = getSkillLevel("tapCollectionBoost");
+        const collectionBonus =
+          Math.floor(Number(getTotalTapItemCountForBonus() / 10n)) * collectionLevel;
+
+        return 100 + coreBonus + savingBonus + collectionBonus;
+      }
+
+      function getSkillCurrentEffectText(skill) {
+        const level = getSkillLevel(skill.id);
+
+        if (skill.type === "autoMultiplier") {
+          return `現在効果：自動増加 +${level * 10}%`;
+        }
+
+        if (skill.type === "tapMultiplier") {
+          return `現在効果：タップ増加 +${level * 10}%`;
+        }
+
+        if (skill.type === "savingTapBoost") {
+          return `現在効果：タップ増加 +${getSavingTapBoostPercent()}%`;
+        }
+
+        if (skill.type === "autoCollectionBoost") {
+          const targetCount = getTotalAutoItemCountForBonus();
+          const currentBonus = Math.floor(Number(targetCount / 10n)) * level;
+          return `現在効果：自動強化アイテム10個ごとに倍率上昇 / 現在 +${currentBonus}%`;
+        }
+
+        if (skill.type === "tapCollectionBoost") {
+          const targetCount = getTotalTapItemCountForBonus();
+          const currentBonus = Math.floor(Number(targetCount / 10n)) * level;
+          return `現在効果：タップ強化アイテム10個ごとに倍率上昇 / 現在 +${currentBonus}%`;
+        }
+
+        return "";
+      }
+
+      function getSkillNextEffectText(skill) {
+        const level = getSkillLevel(skill.id);
+
+        if (level >= skill.maxLevel) {
+          return "次の強化：最大レベル到達済み";
+        }
+
+        const nextLevel = level + 1;
+
+        if (skill.type === "autoMultiplier") {
+          return `次の強化：自動増加 +${nextLevel * 10}%`;
+        }
+
+        if (skill.type === "tapMultiplier") {
+          return `次の強化：タップ増加 +${nextLevel * 10}%`;
+        }
+
+        if (skill.type === "savingTapBoost") {
+          return "次の強化：所持ふぁぼ度によるタップ倍率が上昇";
+        }
+
+        if (skill.type === "autoCollectionBoost") {
+          return `次の強化：自動強化アイテム10個ごとの倍率がLv.${nextLevel}相当に上昇`;
+        }
+
+        if (skill.type === "tapCollectionBoost") {
+          return `次の強化：タップ強化アイテム10個ごとの倍率がLv.${nextLevel}相当に上昇`;
+        }
+
+        return "";
+      }
+
+      function getBaseAffectionPerSecond() {
+        return (
+          autoItems.reduce((total, item) => {
+            return total + getItemCurrentEffect(item);
+          }, 0n) + state.legacyAutoFlatBonus
+        );
+      }
+
+      function getAffectionPerSecond() {
+        const base = getBaseAffectionPerSecond();
+        return applyPercent(base, getAutoMultiplierPercent());
+      }
+
+      function getBaseTapPower() {
+        return (
+          tapItems.reduce((total, item) => {
+            return total + getItemCurrentEffect(item);
+          }, 1n) + state.legacyTapFlatBonus
+        );
+      }
+
       function getRawTapPower() {
-        return tapItems.reduce((total, item) => {
-          return total + BigInt(getItemCount(item)) * BigInt(item.tapBonus);
-        }, 1n);
+        return applyPercent(getBaseTapPower(), getTapMultiplierPercent());
       }
 
       function getEffectiveTapPower() {
@@ -1941,20 +2644,6 @@
         );
 
         return maxBigInt(1n, maxBigInt(rawTapPower, autoBasedFloor));
-      }
-
-      function getTotalPurchasedItemCount() {
-        let total = 0n;
-
-        for (const count of Object.values(state.autoItemCounts)) {
-          total += BigInt(parseCountValue(count));
-        }
-
-        for (const count of Object.values(state.tapItemCounts)) {
-          total += BigInt(parseCountValue(count));
-        }
-
-        return total;
       }
 
       function canBulkBuy(type) {
@@ -1971,6 +2660,8 @@
       }
 
       function bulkBuyItems(type) {
+        ensureDailyState();
+
         const items = getItemsByType(type);
         const unlockedCount = getUnlockedCount(items);
         let boughtCount = 0;
@@ -1988,6 +2679,14 @@
 
         if (boughtCount <= 0) return;
 
+        if (type === "auto") {
+          state.daily.autoBulkBuyCount += 1;
+        } else {
+          state.daily.tapBulkBuyCount += 1;
+        }
+
+        processDailyMissions();
+
         updateAll();
         saveLocal();
       }
@@ -2001,6 +2700,14 @@
 
         updateAll();
         queueSave();
+      }
+
+      function addRewardAffection(amount) {
+        const addValue = parseBigIntValue(amount);
+
+        state.affection += addValue;
+        state.totalAffection += addValue;
+        state.bestAffection = maxBigInt(state.bestAffection, state.affection);
       }
 
       function buyItem(item) {
@@ -2026,6 +2733,22 @@
         saveLocal();
       }
 
+      function buySkill(skillId) {
+        const skill = SKILL_MAP[skillId];
+        if (!skill) return;
+
+        if (!canUpgradeSkill(skill)) return;
+
+        const level = getSkillLevel(skillId);
+        const cost = getSkillUpgradeCost(skill);
+
+        state.loveCrystals -= cost;
+        setSkillLevel(skillId, level + 1);
+
+        updateAll();
+        saveLocal();
+      }
+
       function getUnlockedCount(items) {
         let count = 0;
 
@@ -2041,6 +2764,166 @@
 
       function getActiveUnlockedCount() {
         return getUnlockedCount(getItemsByType(activeShopType));
+      }
+
+      function ensureDailyState() {
+        const todayKey = getLocalDateKey();
+
+        if (!state.daily || typeof state.daily !== "object") {
+          state.daily = createDefaultDailyState(todayKey);
+          return true;
+        }
+
+        if (state.daily.dateKey !== todayKey) {
+          state.daily = createDefaultDailyState(todayKey);
+          return true;
+        }
+
+        state.daily.autoBulkBuyCount = parseCountValue(state.daily.autoBulkBuyCount);
+        state.daily.tapBulkBuyCount = parseCountValue(state.daily.tapBulkBuyCount);
+        state.daily.tapCount = parseCountValue(state.daily.tapCount);
+
+        if (!state.daily.claimed || typeof state.daily.claimed !== "object") {
+          state.daily.claimed = {};
+        }
+
+        for (const id of [...DAILY_CORE_MISSION_IDS, "allComplete"]) {
+          state.daily.claimed[id] = Boolean(state.daily.claimed[id]);
+        }
+
+        return false;
+      }
+
+      function getDailyMissionName(missionId) {
+        if (missionId === "autoBulkOnce") return "自動を1回一括購入する";
+        if (missionId === "tapBulkOnce") return "タップを1回一括購入する";
+        if (missionId === "tap50") return "50回なでる";
+        if (missionId === "tap100") return "100回なでる";
+        if (missionId === "allComplete") return "デイリーミッションを全て達成する";
+        return "";
+      }
+
+      function getDailyMissionProgress(missionId) {
+        ensureDailyState();
+
+        if (missionId === "autoBulkOnce") {
+          return {
+            current: Math.min(1, state.daily.autoBulkBuyCount),
+            required: 1,
+          };
+        }
+
+        if (missionId === "tapBulkOnce") {
+          return {
+            current: Math.min(1, state.daily.tapBulkBuyCount),
+            required: 1,
+          };
+        }
+
+        if (missionId === "tap50") {
+          return {
+            current: Math.min(50, state.daily.tapCount),
+            required: 50,
+          };
+        }
+
+        if (missionId === "tap100") {
+          return {
+            current: Math.min(100, state.daily.tapCount),
+            required: 100,
+          };
+        }
+
+        if (missionId === "allComplete") {
+          const current = DAILY_CORE_MISSION_IDS.filter((id) => {
+            return Boolean(state.daily.claimed[id]);
+          }).length;
+
+          return {
+            current,
+            required: DAILY_CORE_MISSION_IDS.length,
+          };
+        }
+
+        return {
+          current: 0,
+          required: 1,
+        };
+      }
+
+      function isDailyMissionComplete(missionId) {
+        const progress = getDailyMissionProgress(missionId);
+        return progress.current >= progress.required;
+      }
+
+      function processDailyMissions() {
+        ensureDailyState();
+
+        let claimedAny = false;
+
+        for (const missionId of DAILY_CORE_MISSION_IDS) {
+          if (!state.daily.claimed[missionId] && isDailyMissionComplete(missionId)) {
+            claimDailyMissionReward(missionId, false);
+            claimedAny = true;
+          }
+        }
+
+        const allCoreClaimed = DAILY_CORE_MISSION_IDS.every((missionId) => {
+          return Boolean(state.daily.claimed[missionId]);
+        });
+
+        if (allCoreClaimed && !state.daily.claimed.allComplete) {
+          claimDailyMissionReward("allComplete", true);
+          claimedAny = true;
+        }
+
+        return claimedAny;
+      }
+
+      function claimDailyMissionReward(missionId, isAllCompleteReward) {
+        state.daily.claimed[missionId] = true;
+
+        const rewardSeconds = isAllCompleteReward ? 43200 : 3600;
+        const crystalReward = isAllCompleteReward ? 3n : 1n;
+        const affectionReward = getAffectionPerSecond() * BigInt(rewardSeconds);
+
+        addRewardAffection(affectionReward);
+        state.loveCrystals += crystalReward;
+
+        showDailyRewardPopup(
+          getDailyMissionName(missionId),
+          affectionReward,
+          crystalReward,
+        );
+      }
+
+      function showDailyRewardPopup(missionName, affectionReward, crystalReward) {
+        const popup = document.createElement("div");
+        popup.className = "daily-popup";
+
+        const title = document.createElement("div");
+        title.className = "daily-popup-title";
+        title.textContent = `達成：${missionName}`;
+
+        const detail = document.createElement("div");
+        detail.className = "daily-popup-detail";
+        detail.innerHTML =
+          `報酬：ふぁぼ度 +${formatLargeNumber(affectionReward)}<br>` +
+          `強化素材：${SKILL_RESOURCE_NAME} +${formatLargeNumber(crystalReward)}個`;
+
+        popup.appendChild(title);
+        popup.appendChild(detail);
+        dailyPopupStack.appendChild(popup);
+
+        setTimeout(() => {
+          popup.style.opacity = "0";
+          popup.style.transform = "translateY(-8px) scale(0.98)";
+          popup.style.transition = "opacity 280ms ease, transform 280ms ease";
+        }, DAILY_POPUP_VISIBLE_MS - 300);
+
+        setTimeout(() => {
+          popup.remove();
+        }, DAILY_POPUP_VISIBLE_MS);
       }
 
       function createShopItemElement(item) {
@@ -2127,13 +3010,22 @@
 
         const count = getItemCount(item);
         const cost = getItemCost(item);
+        const selfPercent = getItemSelfMultiplierPercent(count);
+        const currentEffect = getItemCurrentEffect(item);
+        const nextGain = getItemNextGain(item);
 
         elements.nameEl.textContent = item.name;
 
         if (item.type === "auto") {
-          elements.detailEl.textContent = `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / 自動ふぁぼ度 +${formatLargeNumber(item.production)}/秒`;
+          elements.detailEl.textContent =
+            `ランク${item.rank} / 旧${item.legacyNumber}相当 / 所持数: ${formatLargeNumber(count)} / ` +
+            `所持倍率: ${formatMultiplierFromPercent(selfPercent)} / ` +
+            `現在 +${formatLargeNumber(currentEffect)}/秒 / 次回 +${formatLargeNumber(nextGain)}/秒`;
         } else {
-          elements.detailEl.textContent = `ランク${item.rank} / 所持数: ${formatLargeNumber(count)} / タップふぁぼ度 +${formatLargeNumber(item.tapBonus)}`;
+          elements.detailEl.textContent =
+            `ランク${item.rank} / 旧${item.legacyNumber}相当 / 所持数: ${formatLargeNumber(count)} / ` +
+            `所持倍率: ${formatMultiplierFromPercent(selfPercent)} / ` +
+            `現在 +${formatLargeNumber(currentEffect)} / 次回 +${formatLargeNumber(nextGain)}`;
         }
 
         elements.costEl.textContent = `${formatLargeNumber(cost)} ふぁぼ度`;
@@ -2154,7 +3046,6 @@
 
         tapPowerEl.textContent = formatLargeNumber(tapPower);
         perSecondEl.textContent = formatLargeNumber(perSecond);
-        tapGainLabelEl.textContent = `+${formatLargeNumber(tapPower)}`;
 
         const items = getItemsByType(activeShopType);
         const unlockedCount = getActiveUnlockedCount();
@@ -2169,6 +3060,129 @@
         shopInfoEl.innerHTML =
           `${shopName}: ${unlockedCount}/${MAX_SHOP_ITEMS}<br>` +
           `最高所持: ${formatLargeNumber(state.bestAffection)} / ${nextUnlockText}`;
+      }
+
+      function updateDailyArea() {
+        ensureDailyState();
+
+        dailyInfoEl.innerHTML =
+          `${state.daily.dateKey}<br>` +
+          `${SKILL_RESOURCE_NAME}: ${formatLargeNumber(state.loveCrystals)}個`;
+
+        dailyMissionListEl.innerHTML = "";
+
+        for (const missionId of [...DAILY_CORE_MISSION_IDS, "allComplete"]) {
+          const progress = getDailyMissionProgress(missionId);
+          const isComplete = progress.current >= progress.required;
+          const isClaimed = Boolean(state.daily.claimed[missionId]);
+
+          const card = document.createElement("div");
+          card.className = "daily-card";
+          card.classList.toggle("is-complete", isComplete);
+          card.classList.toggle("is-claimed", isClaimed);
+
+          const header = document.createElement("div");
+          header.className = "daily-card-header";
+
+          const name = document.createElement("div");
+          name.className = "daily-name";
+          name.textContent = getDailyMissionName(missionId);
+
+          const status = document.createElement("div");
+          status.className = "daily-status";
+          status.textContent = isClaimed
+            ? "受取済"
+            : isComplete
+              ? "達成"
+              : `${progress.current}/${progress.required}`;
+
+          const detail = document.createElement("div");
+          detail.className = "daily-detail";
+
+          const rewardSeconds = missionId === "allComplete" ? 43200 : 3600;
+          const crystalReward = missionId === "allComplete" ? 3 : 1;
+          detail.textContent = `報酬：現在の自動増加 ${formatDuration(rewardSeconds)} 分のふぁぼ度 + 強化素材「${SKILL_RESOURCE_NAME}」${crystalReward}個`;
+
+          header.appendChild(name);
+          header.appendChild(status);
+          card.appendChild(header);
+          card.appendChild(detail);
+
+          dailyMissionListEl.appendChild(card);
+        }
+      }
+
+      function getSkillDescription(skill) {
+        const lines = [
+          `対象：${skill.target}`,
+          skill.effectText,
+          getSkillCurrentEffectText(skill),
+          getSkillNextEffectText(skill),
+        ];
+
+        return lines.filter(Boolean).join("\n");
+      }
+
+      function updateSkillTreeArea() {
+        const autoPercent = getAutoMultiplierPercent();
+        const tapPercent = getTapMultiplierPercent();
+
+        skillInfoEl.innerHTML =
+          `${SKILL_RESOURCE_NAME}: ${formatLargeNumber(state.loveCrystals)}個<br>` +
+          `自動 ${formatMultiplierFromPercent(autoPercent)} / タップ ${formatMultiplierFromPercent(tapPercent)}`;
+
+        skillListEl.innerHTML = "";
+
+        for (const skill of SKILLS) {
+          const level = getSkillLevel(skill.id);
+          const isMax = level >= skill.maxLevel;
+          const cost = getSkillUpgradeCost(skill);
+          const canBuy = canUpgradeSkill(skill);
+
+          const card = document.createElement("div");
+          card.className = "skill-card";
+
+          const header = document.createElement("div");
+          header.className = "skill-card-header";
+
+          const name = document.createElement("div");
+          name.className = "skill-name";
+          name.textContent = skill.name;
+
+          const levelEl = document.createElement("div");
+          levelEl.className = "skill-level";
+          levelEl.textContent = `Lv.${level}/${skill.maxLevel}`;
+
+          const detail = document.createElement("div");
+          detail.className = "skill-detail";
+          detail.innerHTML = getSkillDescription(skill).replace(/\n/g, "<br>");
+
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "skill-buy-button";
+          button.disabled = !canBuy;
+
+          if (isMax) {
+            button.textContent = "最大強化済み";
+          } else if (canBuy) {
+            button.textContent = `${SKILL_RESOURCE_NAME} ${formatLargeNumber(cost)}個で強化`;
+          } else {
+            button.textContent = `${SKILL_RESOURCE_NAME}不足：必要 ${formatLargeNumber(cost)}個`;
+          }
+
+          button.addEventListener("click", () => {
+            buySkill(skill.id);
+          });
+
+          header.appendChild(name);
+          header.appendChild(levelEl);
+
+          card.appendChild(header);
+          card.appendChild(detail);
+          card.appendChild(button);
+
+          skillListEl.appendChild(card);
+        }
       }
 
       function updateLoveArea() {
@@ -2204,6 +3218,9 @@
         const totalItemCount = getTotalPurchasedItemCount();
         totalItemCountEl.textContent = formatLargeNumber(totalItemCount);
         totalItemCountEl.title = formatFullNumber(totalItemCount);
+
+        loveCrystalCountEl.textContent = formatLargeNumber(state.loveCrystals);
+        loveCrystalCountEl.title = formatFullNumber(state.loveCrystals);
       }
 
       function updateShopTabs() {
@@ -2212,8 +3229,11 @@
       }
 
       function updateAll() {
+        ensureDailyState();
         updateShopTabs();
         updateStats();
+        updateDailyArea();
+        updateSkillTreeArea();
         updateLoveArea();
         updateAchievementArea();
         updateBulkBuyButtons();
@@ -2301,14 +3321,21 @@
 
       function serializeState() {
         return {
-          version: 4,
+          version: 5,
           affection: state.affection.toString(),
           totalAffection: state.totalAffection.toString(),
           bestAffection: state.bestAffection.toString(),
           lovePoints: state.lovePoints.toString(),
+          loveCrystals: state.loveCrystals.toString(),
           tapCount: state.tapCount.toString(),
           autoItemCounts: state.autoItemCounts,
           tapItemCounts: state.tapItemCounts,
+          legacyAutoFlatBonus: state.legacyAutoFlatBonus.toString(),
+          legacyTapFlatBonus: state.legacyTapFlatBonus.toString(),
+          legacyAutoItemCount: state.legacyAutoItemCount.toString(),
+          legacyTapItemCount: state.legacyTapItemCount.toString(),
+          skills: state.skills,
+          daily: state.daily,
           lastSavedAt: state.lastSavedAt,
         };
       }
@@ -2345,6 +3372,45 @@
         };
       }
 
+      function sanitizeDailyData(data) {
+        const todayKey = getLocalDateKey();
+
+        if (!data || typeof data !== "object") {
+          return createDefaultDailyState(todayKey);
+        }
+
+        if (data.dateKey !== todayKey) {
+          return createDefaultDailyState(todayKey);
+        }
+
+        return {
+          dateKey: todayKey,
+          autoBulkBuyCount: parseCountValue(data.autoBulkBuyCount),
+          tapBulkBuyCount: parseCountValue(data.tapBulkBuyCount),
+          tapCount: parseCountValue(data.tapCount),
+          claimed: {
+            autoBulkOnce: Boolean(data.claimed && data.claimed.autoBulkOnce),
+            tapBulkOnce: Boolean(data.claimed && data.claimed.tapBulkOnce),
+            tap50: Boolean(data.claimed && data.claimed.tap50),
+            tap100: Boolean(data.claimed && data.claimed.tap100),
+            allComplete: Boolean(data.claimed && data.claimed.allComplete),
+          },
+        };
+      }
+
+      function sanitizeSkillsData(data) {
+        const cleanSkills = {};
+
+        if (data && typeof data === "object") {
+          for (const skill of SKILLS) {
+            const level = Math.max(0, Math.floor(Number(data[skill.id]) || 0));
+            cleanSkills[skill.id] = Math.min(skill.maxLevel, level);
+          }
+        }
+
+        return cleanSkills;
+      }
+
       function sanitizeSaveData(data) {
         if (!data || typeof data !== "object") {
           throw new Error("セーブデータの形式が正しくありません。");
@@ -2352,7 +3418,16 @@
 
         const cleanData = createDefaultState();
 
-        cleanData.version = 4;
+        const sourceVersion = Math.floor(Number(data.version) || 0);
+        const hasLegacyBonusFields =
+          Object.prototype.hasOwnProperty.call(data, "legacyAutoFlatBonus") ||
+          Object.prototype.hasOwnProperty.call(data, "legacyTapFlatBonus") ||
+          Object.prototype.hasOwnProperty.call(data, "legacyAutoItemCount") ||
+          Object.prototype.hasOwnProperty.call(data, "legacyTapItemCount");
+
+        const shouldConvertOverflowItems = sourceVersion < 5 || !hasLegacyBonusFields;
+
+        cleanData.version = 5;
         cleanData.affection = parseBigIntValue(data.affection);
         cleanData.totalAffection = parseBigIntValue(data.totalAffection);
         cleanData.bestAffection = maxBigInt(
@@ -2360,8 +3435,14 @@
           parseBigIntValue(data.bestAffection),
         );
         cleanData.lovePoints = parseBigIntValue(data.lovePoints);
+        cleanData.loveCrystals = parseBigIntValue(data.loveCrystals);
         cleanData.tapCount = parseBigIntValue(data.tapCount);
         cleanData.lastSavedAt = Number(data.lastSavedAt) || Date.now();
+
+        cleanData.legacyAutoFlatBonus = parseBigIntValue(data.legacyAutoFlatBonus);
+        cleanData.legacyTapFlatBonus = parseBigIntValue(data.legacyTapFlatBonus);
+        cleanData.legacyAutoItemCount = parseBigIntValue(data.legacyAutoItemCount);
+        cleanData.legacyTapItemCount = parseBigIntValue(data.legacyTapItemCount);
 
         cleanData.autoItemCounts = {};
         cleanData.tapItemCounts = {};
@@ -2371,26 +3452,56 @@
 
         if (autoSourceCounts && typeof autoSourceCounts === "object") {
           for (const [id, count] of Object.entries(autoSourceCounts)) {
-            if (validAutoItemIds.has(id)) {
-              cleanData.autoItemCounts[id] = parseCountValue(count);
+            const parsedCount = parseCountValue(count);
+
+            let number = null;
+
+            const autoMatch = id.match(/^auto_(\d+)$/);
+            if (autoMatch) {
+              number = Number(autoMatch[1]);
             }
 
             const oldIdMatch = id.match(/^item_(\d+)$/);
             if (oldIdMatch) {
-              const convertedId = `auto_${Number(oldIdMatch[1])}`;
-              if (validAutoItemIds.has(convertedId)) {
-                cleanData.autoItemCounts[convertedId] = parseCountValue(count);
-              }
+              number = Number(oldIdMatch[1]);
+            }
+
+            if (!number || parsedCount <= 0) continue;
+
+            const convertedId = `auto_${number}`;
+
+            if (number <= MAX_SHOP_ITEMS && validAutoItemIds.has(convertedId)) {
+              cleanData.autoItemCounts[convertedId] = parsedCount;
+            } else if (shouldConvertOverflowItems) {
+              cleanData.legacyAutoFlatBonus +=
+                BigInt(parsedCount) * BigInt(getAutoProductionByNumber(number));
+              cleanData.legacyAutoItemCount += BigInt(parsedCount);
             }
           }
         }
 
         if (tapSourceCounts && typeof tapSourceCounts === "object") {
           for (const [id, count] of Object.entries(tapSourceCounts)) {
-            if (!validTapItemIds.has(id)) continue;
-            cleanData.tapItemCounts[id] = parseCountValue(count);
+            const parsedCount = parseCountValue(count);
+            const tapMatch = id.match(/^tap_(\d+)$/);
+
+            if (!tapMatch || parsedCount <= 0) continue;
+
+            const number = Number(tapMatch[1]);
+            const convertedId = `tap_${number}`;
+
+            if (number <= MAX_SHOP_ITEMS && validTapItemIds.has(convertedId)) {
+              cleanData.tapItemCounts[convertedId] = parsedCount;
+            } else if (shouldConvertOverflowItems) {
+              cleanData.legacyTapFlatBonus +=
+                BigInt(parsedCount) * BigInt(getTapBonusByNumber(number));
+              cleanData.legacyTapItemCount += BigInt(parsedCount);
+            }
           }
         }
+
+        cleanData.skills = sanitizeSkillsData(data.skills);
+        cleanData.daily = sanitizeDailyData(data.daily);
 
         return cleanData;
       }
@@ -2421,7 +3532,7 @@
 
         const now = new Date();
         const fileName =
-          "affection-save-" +
+          "fav-clicker-save-" +
           now.getFullYear() +
           String(now.getMonth() + 1).padStart(2, "0") +
           String(now.getDate()).padStart(2, "0") +
@@ -2501,12 +3612,19 @@
       });
 
       characterButton.addEventListener("click", () => {
+        ensureDailyState();
+
         characterBounceEl.classList.remove("is-bouncing");
         void characterBounceEl.offsetWidth;
         characterBounceEl.classList.add("is-bouncing");
 
         state.tapCount += 1n;
+        state.daily.tapCount += 1;
+
         addAffection(getEffectiveTapPower());
+
+        processDailyMissions();
+        updateAll();
         saveLocal();
       });
 
@@ -2639,6 +3757,13 @@
         addAffection(perSecond);
       }, 1000);
 
+      setInterval(() => {
+        if (ensureDailyState()) {
+          updateAll();
+          saveLocal();
+        }
+      }, 30000);
+
       window.addEventListener("beforeunload", () => {
         saveLocal();
       });
@@ -2646,6 +3771,11 @@
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "hidden") {
           saveLocal();
+        } else {
+          if (ensureDailyState()) {
+            updateAll();
+            saveLocal();
+          }
         }
       });
 
