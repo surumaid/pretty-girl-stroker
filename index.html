@@ -358,6 +358,30 @@
       color: var(--accent-contrast);
     }
 
+    .bulk-buy-row {
+      flex: 0 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 0 0 8px;
+    }
+
+    .bulk-buy-button {
+      border: none;
+      border-radius: 12px;
+      padding: 9px 6px;
+      background: var(--neutral-button);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .bulk-buy-button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .shop-list {
       flex: 1 1 auto;
       min-height: 0;
@@ -430,8 +454,7 @@
       gap: 10px;
     }
 
-    .love-header,
-    .achievement-header {
+    .love-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -445,8 +468,7 @@
       white-space: nowrap;
     }
 
-    .love-points,
-    .achievement-value {
+    .love-points {
       min-width: 0;
       font-size: 20px;
       font-weight: 900;
@@ -483,6 +505,35 @@
     .love-button:disabled {
       opacity: 0.45;
       cursor: not-allowed;
+    }
+
+    .achievement-grid {
+      display: grid;
+      gap: 8px;
+    }
+
+    .achievement-card {
+      padding: 10px;
+      border-radius: 14px;
+      background: var(--panel-soft);
+      display: grid;
+      gap: 4px;
+    }
+
+    .achievement-label {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+
+    .achievement-value {
+      min-width: 0;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .tools-area {
@@ -675,6 +726,15 @@
         <button id="tapShopTab" class="shop-tab" type="button">タップ強化</button>
       </div>
 
+      <div class="bulk-buy-row">
+        <button id="bulkBuyAutoButton" class="bulk-buy-button" type="button">
+          自動を一括購入
+        </button>
+        <button id="bulkBuyTapButton" class="bulk-buy-button" type="button">
+          タップを一括購入
+        </button>
+      </div>
+
       <div id="shopList" class="shop-list"></div>
     </section>
 
@@ -695,13 +755,27 @@
     </section>
 
     <section class="achievement-area">
-      <div class="achievement-header">
-        <div class="achievement-title">実績</div>
-        <div id="tapCount" class="achievement-value">0</div>
+      <div class="achievement-title">実績</div>
+
+      <div class="achievement-grid">
+        <div class="achievement-card">
+          <div class="achievement-label">今までなでた回数</div>
+          <div id="tapCount" class="achievement-value">0</div>
+        </div>
+
+        <div class="achievement-card">
+          <div class="achievement-label">今までの最大好感度所持数</div>
+          <div id="maxAffectionRecord" class="achievement-value">0</div>
+        </div>
+
+        <div class="achievement-card">
+          <div class="achievement-label">全購入アイテム所持数</div>
+          <div id="totalItemCount" class="achievement-value">0</div>
+        </div>
       </div>
 
       <div class="achievement-detail">
-        今までキャラクターをなでた回数です。既存セーブデータでは、このコード実装後から累積されます。
+        なでた回数は、このコード実装後から累積されます。全購入アイテム所持数は、自動増加アイテムとタップ強化アイテムの合計です。
       </div>
     </section>
 
@@ -1132,6 +1206,8 @@
     const shopInfoEl = document.getElementById("shopInfo");
     const autoShopTab = document.getElementById("autoShopTab");
     const tapShopTab = document.getElementById("tapShopTab");
+    const bulkBuyAutoButton = document.getElementById("bulkBuyAutoButton");
+    const bulkBuyTapButton = document.getElementById("bulkBuyTapButton");
 
     const lovePointsEl = document.getElementById("lovePoints");
     const lovePointsMiniEl = document.getElementById("lovePointsMini");
@@ -1140,6 +1216,8 @@
     const loveOfferMiniButton = document.getElementById("loveOfferMiniButton");
 
     const tapCountEl = document.getElementById("tapCount");
+    const maxAffectionRecordEl = document.getElementById("maxAffectionRecord");
+    const totalItemCountEl = document.getElementById("totalItemCount");
 
     const themeSelect = document.getElementById("themeSelect");
     const changeCharacterImageButton = document.getElementById("changeCharacterImageButton");
@@ -1496,6 +1574,55 @@
       return maxBigInt(1n, maxBigInt(rawTapPower, autoBasedFloor));
     }
 
+    function getTotalPurchasedItemCount() {
+      let total = 0n;
+
+      for (const count of Object.values(state.autoItemCounts)) {
+        total += BigInt(parseCountValue(count));
+      }
+
+      for (const count of Object.values(state.tapItemCounts)) {
+        total += BigInt(parseCountValue(count));
+      }
+
+      return total;
+    }
+
+    function canBulkBuy(type) {
+      const items = getItemsByType(type);
+      const unlockedCount = getUnlockedCount(items);
+
+      for (let i = 0; i < unlockedCount; i++) {
+        if (state.affection >= getItemCost(items[i])) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function bulkBuyItems(type) {
+      const items = getItemsByType(type);
+      const unlockedCount = getUnlockedCount(items);
+      let boughtCount = 0;
+
+      for (let i = 0; i < unlockedCount; i++) {
+        const item = items[i];
+        const cost = getItemCost(item);
+
+        if (state.affection >= cost) {
+          state.affection -= cost;
+          setItemCount(item, getItemCount(item) + 1);
+          boughtCount++;
+        }
+      }
+
+      if (boughtCount <= 0) return;
+
+      updateAll();
+      saveLocal();
+    }
+
     function addAffection(amount) {
       const addValue = parseBigIntValue(amount);
 
@@ -1647,6 +1774,11 @@
       elements.button.disabled = state.affection < cost;
     }
 
+    function updateBulkBuyButtons() {
+      bulkBuyAutoButton.disabled = !canBulkBuy("auto");
+      bulkBuyTapButton.disabled = !canBulkBuy("tap");
+    }
+
     function updateStats() {
       const tapPower = getEffectiveTapPower();
       const perSecond = getAffectionPerSecond();
@@ -1701,6 +1833,13 @@
     function updateAchievementArea() {
       tapCountEl.textContent = formatLargeNumber(state.tapCount);
       tapCountEl.title = formatFullNumber(state.tapCount);
+
+      maxAffectionRecordEl.textContent = formatLargeNumber(state.bestAffection);
+      maxAffectionRecordEl.title = formatFullNumber(state.bestAffection);
+
+      const totalItemCount = getTotalPurchasedItemCount();
+      totalItemCountEl.textContent = formatLargeNumber(totalItemCount);
+      totalItemCountEl.title = formatFullNumber(totalItemCount);
     }
 
     function updateShopTabs() {
@@ -1713,6 +1852,7 @@
       updateStats();
       updateLoveArea();
       updateAchievementArea();
+      updateBulkBuyButtons();
       syncShopList();
     }
 
@@ -2017,6 +2157,14 @@
     tapShopTab.addEventListener("click", () => {
       activeShopType = "tap";
       updateAll();
+    });
+
+    bulkBuyAutoButton.addEventListener("click", () => {
+      bulkBuyItems("auto");
+    });
+
+    bulkBuyTapButton.addEventListener("click", () => {
+      bulkBuyItems("tap");
     });
 
     loveOfferButton.addEventListener("click", () => {
