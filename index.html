@@ -438,23 +438,6 @@
         display: none;
       }
 
-      .offline-notice {
-        display: none;
-        padding: 6px 10px;
-        border-radius: 999px;
-        background: var(--panel);
-        background: color-mix(in srgb, var(--panel) 96%, transparent);
-        color: var(--accent);
-        font-size: 11px;
-        font-weight: 700;
-        text-align: center;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        box-shadow: 0 3px 10px var(--shadow);
-        backdrop-filter: blur(2px);
-      }
-
       .character-row {
         flex: 1 1 auto;
         min-height: 0;
@@ -1549,8 +1532,6 @@
           </div>
         </div>
 
-        <div id="offlineNotice" class="offline-notice"></div>
-
         <div class="character-row">
           <button
             id="characterButton"
@@ -1683,6 +1664,7 @@
 
           <div class="daily-detail">
             毎日0時に更新されます。達成した報酬は自動で受け取ります。
+            一括購入は購入数ミッションの対象外です。
           </div>
         </div>
       </details>
@@ -1932,6 +1914,8 @@
       const ITEM_SELF_BONUS_STEP_COUNT = 10;
       const ITEM_SELF_BONUS_PERCENT_PER_STEP = 10;
 
+      const BULK_BUY_UNLOCK_BEST_AFFECTION = 1000n;
+
       const CARE_MAX = 10000;
 
       const CARE_DECAY_PER_HOUR = {
@@ -2037,7 +2021,6 @@
       const SAVING_TAP_BONUS_CAP_MULTIPLIER = 10n;
 
       const OFFLINE_PROGRESS_MAX_SECONDS = 48 * 60 * 60;
-      const OFFLINE_NOTICE_VISIBLE_MS = 10000;
       const DAILY_POPUP_VISIBLE_MS = 5200;
 
       const CHARACTER_IMAGE_MAX_SIZE = 1200;
@@ -2045,7 +2028,7 @@
 
       const LOVE_BASE_COST = 10n ** 68n;
 
-      const DAILY_CORE_MISSION_IDS = ["autoBulkOnce", "tapBulkOnce", "tap50", "tap100"];
+      const DAILY_CORE_MISSION_IDS = ["autoItem5", "tapItem5", "tap50", "tap100"];
 
       const SKILL_RESOURCE_NAME = "愛の結晶";
       const BASE_SKILL_MAX_LEVEL = 999;
@@ -2507,7 +2490,6 @@
       const characterPlaceholderEl = document.getElementById("characterPlaceholder");
       const characterBounceEl = document.getElementById("characterBounce");
       const characterNamePlateEl = document.getElementById("characterNamePlate");
-      const offlineNoticeEl = document.getElementById("offlineNotice");
 
       const shopListEl = document.getElementById("shopList");
       const shopInfoEl = document.getElementById("shopInfo");
@@ -2617,7 +2599,6 @@
       let renderedShopType = "";
       let renderedUnlockedCount = -1;
       let saveTimer = null;
-      let offlineNoticeTimer = null;
 
       const itemElements = new Map();
 
@@ -2673,12 +2654,12 @@
       function createDefaultDailyState(dateKey = getLocalDateKey()) {
         return {
           dateKey,
-          autoBulkBuyCount: 0,
-          tapBulkBuyCount: 0,
+          autoItemPurchaseCount: 0,
+          tapItemPurchaseCount: 0,
           tapCount: 0,
           claimed: {
-            autoBulkOnce: false,
-            tapBulkOnce: false,
+            autoItem5: false,
+            tapItem5: false,
             tap50: false,
             tap100: false,
             allComplete: false,
@@ -2942,6 +2923,14 @@
         return clampCareValue(value) / CARE_MAX;
       }
 
+      function getCareGainRate(value) {
+        const careValue = clampCareValue(value);
+
+        if (careValue >= 9000) return 0.25;
+        if (careValue >= 7000) return 0.5;
+        return 1;
+      }
+
       function sanitizeCareData(data) {
         const defaultCare = createDefaultCareState();
 
@@ -3014,14 +3003,16 @@
         state.care.lastUpdatedAt = now;
       }
 
-      function addCareValue(type, amount) {
+      function addCareValue(type, amount, useDiminishingReturn = true) {
         ensureCareState();
 
         if (!Object.prototype.hasOwnProperty.call(state.care, type)) {
           return;
         }
 
-        state.care[type] = clampCareValue(state.care[type] + Number(amount || 0));
+        const currentValue = state.care[type];
+        const rate = useDiminishingReturn ? getCareGainRate(currentValue) : 1;
+        state.care[type] = clampCareValue(currentValue + Number(amount || 0) * rate);
       }
 
       function getCurrentMealSlot(date = new Date()) {
@@ -3126,7 +3117,10 @@
         const item = getCareShortcutItem(type);
         if (!item) return;
 
-        buyItem(item);
+        buyItem(item, {
+          countForDaily: true,
+          applyCare: true,
+        });
       }
 
       function getCareBuffInfoText() {
@@ -3379,15 +3373,6 @@
         return getTotalActiveTapItemCount() + state.legacyTapItemCount;
       }
 
-      function getTotalPurchasedItemCount() {
-        return (
-          getTotalActiveAutoItemCount() +
-          getTotalActiveTapItemCount() +
-          state.legacyAutoItemCount +
-          state.legacyTapItemCount
-        );
-      }
-
       function getInfiniteAutoBoostPercent() {
         return getSkillLevel(INFINITE_AUTO_SKILL.id);
       }
@@ -3580,7 +3565,13 @@
         return maxBigInt(1n, getRawTapPower());
       }
 
+      function isBulkBuyUnlocked() {
+        return state.bestAffection >= BULK_BUY_UNLOCK_BEST_AFFECTION;
+      }
+
       function canBulkBuy(type) {
+        if (!isBulkBuyUnlocked()) return false;
+
         const items = getItemsByType(type);
         const unlockedCount = getUnlockedCount(items);
 
@@ -3593,7 +3584,19 @@
         return false;
       }
 
+      function incrementDailyPurchaseCount(type, amount = 1) {
+        ensureDailyState();
+
+        if (type === "auto") {
+          state.daily.autoItemPurchaseCount += amount;
+        } else if (type === "tap") {
+          state.daily.tapItemPurchaseCount += amount;
+        }
+      }
+
       function bulkBuyItems(type) {
+        if (!isBulkBuyUnlocked()) return;
+
         ensureDailyState();
 
         const items = getItemsByType(type);
@@ -3607,24 +3610,11 @@
           if (state.affection >= cost) {
             state.affection -= cost;
             setItemCount(item, getItemCount(item) + 1);
-
-            if (type === "auto") {
-              applyCareGainForItem(item);
-            }
-
             boughtCount++;
           }
         }
 
         if (boughtCount <= 0) return;
-
-        if (type === "auto") {
-          state.daily.autoBulkBuyCount += 1;
-        } else {
-          state.daily.tapBulkBuyCount += 1;
-        }
-
-        processDailyMissions();
 
         updateAll();
         saveLocal();
@@ -3649,14 +3639,31 @@
         state.bestAffection = maxBigInt(state.bestAffection, state.affection);
       }
 
-      function buyItem(item) {
+      function buyItem(
+        item,
+        options = {
+          countForDaily: true,
+          applyCare: true,
+        },
+      ) {
         const cost = getItemCost(item);
         if (state.affection < cost) return;
+
+        const shouldCountForDaily = options.countForDaily !== false;
+        const shouldApplyCare = options.applyCare !== false;
 
         state.affection -= cost;
         setItemCount(item, getItemCount(item) + 1);
 
-        applyCareGainForItem(item);
+        if (shouldCountForDaily) {
+          incrementDailyPurchaseCount(item.type, 1);
+        }
+
+        if (shouldApplyCare) {
+          applyCareGainForItem(item);
+        }
+
+        processDailyMissions();
 
         updateAll();
         saveLocal();
@@ -3721,8 +3728,12 @@
           return true;
         }
 
-        state.daily.autoBulkBuyCount = parseCountValue(state.daily.autoBulkBuyCount);
-        state.daily.tapBulkBuyCount = parseCountValue(state.daily.tapBulkBuyCount);
+        state.daily.autoItemPurchaseCount = parseCountValue(
+          state.daily.autoItemPurchaseCount,
+        );
+        state.daily.tapItemPurchaseCount = parseCountValue(
+          state.daily.tapItemPurchaseCount,
+        );
         state.daily.tapCount = parseCountValue(state.daily.tapCount);
 
         if (!state.daily.claimed || typeof state.daily.claimed !== "object") {
@@ -3737,8 +3748,8 @@
       }
 
       function getDailyMissionName(missionId) {
-        if (missionId === "autoBulkOnce") return "自動を1回一括購入する";
-        if (missionId === "tapBulkOnce") return "タップを1回一括購入する";
+        if (missionId === "autoItem5") return "自動増加アイテムを5個購入する";
+        if (missionId === "tapItem5") return "タップ強化アイテムを5個購入する";
         if (missionId === "tap50") return "50回なでる";
         if (missionId === "tap100") return "100回なでる";
         if (missionId === "allComplete") return "デイリーミッションを全て達成する";
@@ -3748,17 +3759,17 @@
       function getDailyMissionProgress(missionId) {
         ensureDailyState();
 
-        if (missionId === "autoBulkOnce") {
+        if (missionId === "autoItem5") {
           return {
-            current: Math.min(1, state.daily.autoBulkBuyCount),
-            required: 1,
+            current: Math.min(5, state.daily.autoItemPurchaseCount),
+            required: 5,
           };
         }
 
-        if (missionId === "tapBulkOnce") {
+        if (missionId === "tapItem5") {
           return {
-            current: Math.min(1, state.daily.tapBulkBuyCount),
-            required: 1,
+            current: Math.min(5, state.daily.tapItemPurchaseCount),
+            required: 5,
           };
         }
 
@@ -3868,6 +3879,42 @@
         }, DAILY_POPUP_VISIBLE_MS);
       }
 
+      function showOfflineNotice(result) {
+        if (!result || result.gain <= 0n) {
+          return;
+        }
+
+        const popup = document.createElement("div");
+        popup.className = "daily-popup";
+
+        const title = document.createElement("div");
+        title.className = "daily-popup-title";
+        title.textContent = "留守中の報酬";
+
+        const detail = document.createElement("div");
+        detail.className = "daily-popup-detail";
+
+        const cappedText = result.wasCapped ? "<br>上限：48時間ぶんまで" : "";
+
+        detail.innerHTML =
+          `留守中 ${formatDuration(result.appliedSeconds)}ぶんの${getResourceLabelHtml("affection", "ふぁぼ度")}<br>` +
+          `+${formatLargeNumber(result.gain)}${cappedText}`;
+
+        popup.appendChild(title);
+        popup.appendChild(detail);
+        dailyPopupStack.appendChild(popup);
+
+        setTimeout(() => {
+          popup.style.opacity = "0";
+          popup.style.transform = "translateY(-8px) scale(0.98)";
+          popup.style.transition = "opacity 280ms ease, transform 280ms ease";
+        }, DAILY_POPUP_VISIBLE_MS - 300);
+
+        setTimeout(() => {
+          popup.remove();
+        }, DAILY_POPUP_VISIBLE_MS);
+      }
+
       function createShopItemElement(item) {
         const button = document.createElement("button");
         button.type = "button";
@@ -3890,7 +3937,10 @@
         button.appendChild(costEl);
 
         button.addEventListener("click", () => {
-          buyItem(item);
+          buyItem(item, {
+            countForDaily: true,
+            applyCare: true,
+          });
         });
 
         shopListEl.appendChild(button);
@@ -3975,6 +4025,16 @@
       }
 
       function updateBulkBuyButtons() {
+        if (!isBulkBuyUnlocked()) {
+          bulkBuyAutoButton.disabled = true;
+          bulkBuyTapButton.disabled = true;
+          bulkBuyAutoButton.textContent = "一括購入 解放: 1,000";
+          bulkBuyTapButton.textContent = "一括購入 解放: 1,000";
+          return;
+        }
+
+        bulkBuyAutoButton.textContent = "自動を一括購入";
+        bulkBuyTapButton.textContent = "タップを一括購入";
         bulkBuyAutoButton.disabled = !canBulkBuy("auto");
         bulkBuyTapButton.disabled = !canBulkBuy("tap");
       }
@@ -4246,35 +4306,6 @@
         syncShopList();
       }
 
-      function hideOfflineNotice() {
-        if (offlineNoticeTimer) {
-          clearTimeout(offlineNoticeTimer);
-          offlineNoticeTimer = null;
-        }
-
-        offlineNoticeEl.style.display = "none";
-        offlineNoticeEl.textContent = "";
-      }
-
-      function showOfflineNotice(result) {
-        if (!result || result.gain <= 0n) {
-          hideOfflineNotice();
-          return;
-        }
-
-        if (offlineNoticeTimer) {
-          clearTimeout(offlineNoticeTimer);
-        }
-
-        const cappedText = result.wasCapped ? " / 上限48時間" : "";
-        offlineNoticeEl.innerHTML = `留守中 ${formatDuration(result.appliedSeconds)}ぶんの${getResourceLabelHtml("affection", "ふぁぼ度")} +${formatLargeNumber(result.gain)}${cappedText}`;
-        offlineNoticeEl.style.display = "block";
-
-        offlineNoticeTimer = setTimeout(() => {
-          hideOfflineNotice();
-        }, OFFLINE_NOTICE_VISIBLE_MS);
-      }
-
       function applyOfflineProgress() {
         const now = Date.now();
         const lastSavedAt = Number(state.lastSavedAt) || now;
@@ -4393,12 +4424,12 @@
 
         return {
           dateKey: todayKey,
-          autoBulkBuyCount: parseCountValue(data.autoBulkBuyCount),
-          tapBulkBuyCount: parseCountValue(data.tapBulkBuyCount),
+          autoItemPurchaseCount: parseCountValue(data.autoItemPurchaseCount),
+          tapItemPurchaseCount: parseCountValue(data.tapItemPurchaseCount),
           tapCount: parseCountValue(data.tapCount),
           claimed: {
-            autoBulkOnce: Boolean(data.claimed && data.claimed.autoBulkOnce),
-            tapBulkOnce: Boolean(data.claimed && data.claimed.tapBulkOnce),
+            autoItem5: Boolean(data.claimed && data.claimed.autoItem5),
+            tapItem5: Boolean(data.claimed && data.claimed.tapItem5),
             tap50: Boolean(data.claimed && data.claimed.tap50),
             tap100: Boolean(data.claimed && data.claimed.tap100),
             allComplete: Boolean(data.claimed && data.claimed.allComplete),
@@ -4791,7 +4822,6 @@
 
         resetConfirmInput.value = "";
         resetButton.disabled = true;
-        hideOfflineNotice();
       });
 
       setInterval(() => {
