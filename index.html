@@ -286,8 +286,8 @@
       .reload-button {
         position: fixed;
         top: max(10px, env(safe-area-inset-top));
-        right: max(10px, env(safe-area-inset-right));
-        z-index: 50;
+        left: max(10px, env(safe-area-inset-left));
+        z-index: 70;
         width: 42px;
         height: 42px;
         border: none;
@@ -303,6 +303,177 @@
 
       .reload-button:active {
         transform: scale(0.94) rotate(18deg);
+      }
+
+      .menu-button {
+        position: fixed;
+        top: max(10px, env(safe-area-inset-top));
+        right: max(10px, env(safe-area-inset-right));
+        z-index: 70;
+        width: 42px;
+        height: 42px;
+        border: none;
+        border-radius: 999px;
+        background: var(--floating-panel);
+        color: var(--accent);
+        font-size: 24px;
+        font-weight: 900;
+        line-height: 1;
+        box-shadow: 0 4px 14px var(--strong-shadow);
+        cursor: pointer;
+      }
+
+      .menu-button:active {
+        transform: scale(0.94);
+      }
+
+      .menu-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 80;
+        background: rgba(0, 0, 0, 0.28);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 180ms ease;
+      }
+
+      .menu-overlay.is-open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .hamburger-menu {
+        position: fixed;
+        top: 0;
+        right: 0;
+        z-index: 90;
+        width: min(88vw, 390px);
+        height: 100vh;
+        height: 100svh;
+        padding: max(12px, env(safe-area-inset-top)) 12px
+          max(12px, env(safe-area-inset-bottom));
+        background: var(--panel);
+        background: color-mix(in srgb, var(--panel) 97%, transparent);
+        box-shadow: -8px 0 24px var(--strong-shadow);
+        transform: translateX(104%);
+        transition: transform 220ms ease;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        backdrop-filter: blur(6px);
+      }
+
+      .hamburger-menu.is-open {
+        transform: translateX(0);
+      }
+
+      .menu-header {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 2px 2px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .menu-title {
+        font-size: 18px;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .menu-close-button {
+        flex: 0 0 auto;
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 999px;
+        background: var(--neutral-button);
+        color: var(--text);
+        font-size: 22px;
+        font-weight: 900;
+        line-height: 1;
+        cursor: pointer;
+      }
+
+      .menu-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        display: grid;
+        align-content: start;
+        gap: 10px;
+        padding: 2px 0 8px;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .menu-section {
+        border-radius: 14px;
+        background: var(--panel-soft);
+        padding: 10px;
+        display: grid;
+        gap: 8px;
+      }
+
+      .menu-section-title {
+        font-size: 14px;
+        font-weight: 900;
+        color: var(--text);
+      }
+
+      .cloud-status-card {
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--panel) 82%, transparent);
+        padding: 9px;
+        display: grid;
+        gap: 4px;
+      }
+
+      .cloud-status-label {
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+      }
+
+      .cloud-status-value {
+        font-size: 12px;
+        font-weight: 900;
+        color: var(--accent);
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+
+      .cloud-sync-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .cloud-sync-button {
+        border: none;
+        border-radius: 12px;
+        padding: 10px 8px;
+        background: var(--neutral-button);
+        color: var(--text);
+        font-size: 12px;
+        font-weight: 900;
+        line-height: 1.25;
+        cursor: pointer;
+      }
+
+      .cloud-sync-button.primary {
+        background: var(--accent);
+        color: var(--accent-contrast);
+      }
+
+      .cloud-sync-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .menu-tools-area {
+        padding-bottom: 0;
       }
 
       .daily-popup-stack {
@@ -1512,6 +1683,17 @@
         ↻
       </button>
 
+      <button
+        id="menuButton"
+        class="menu-button"
+        type="button"
+        aria-label="メニューを開く"
+        aria-controls="hamburgerMenu"
+        aria-expanded="false"
+      >
+        ☰
+      </button>
+
       <section class="touch-area">
         <div class="status">
           <div class="status-card">
@@ -1668,7 +1850,7 @@
 
           <div class="daily-detail">
             毎日0時に更新されます。達成した報酬は自動で受け取ります。
-            一括購入は購入数ミッションの対象外です。
+            一括購入も購入数ミッションの対象です。満腹・元気・贅沢ゲージの回復は、通常購入とショートカット購入でのみ反映されます。
           </div>
         </div>
       </details>
@@ -1761,135 +1943,222 @@
         </div>
       </details>
 
-      <section class="tools-area">
-        <details class="tool-panel">
-          <summary>表示設定</summary>
-          <div class="tool-content">
-            <div class="setting-field">
-              <label class="setting-label" for="themeSelect">カラーテーマ</label>
-              <select id="themeSelect" class="theme-select"></select>
+      <div id="menuOverlay" class="menu-overlay" hidden></div>
+
+      <aside
+        id="hamburgerMenu"
+        class="hamburger-menu"
+        aria-label="メニュー"
+        aria-hidden="true"
+      >
+        <div class="menu-header">
+          <div class="menu-title">メニュー</div>
+          <button
+            id="menuCloseButton"
+            class="menu-close-button"
+            type="button"
+            aria-label="メニューを閉じる"
+          >
+            ×
+          </button>
+        </div>
+
+        <div class="menu-body">
+          <section class="menu-section" aria-label="データ連携">
+            <div class="menu-section-title">データ連携</div>
+
+            <div class="cloud-status-card">
+              <div class="cloud-status-label">アカウント</div>
+              <div id="cloudAccountStatus" class="cloud-status-value">未ログイン</div>
             </div>
 
-            <div class="setting-field">
-              <label class="setting-label" for="characterNameInput">キャラの名前</label>
-              <input
-                id="characterNameInput"
-                class="text-input"
-                type="text"
-                maxlength="20"
-                placeholder="名前を入力"
-              />
+            <div class="cloud-status-card">
+              <div class="cloud-status-label">同期状態</div>
+              <div id="cloudSyncStatus" class="cloud-status-value">
+                Firebase設定後に有効化できます。
+              </div>
             </div>
 
-            <div class="button-grid">
-              <button id="saveCharacterNameButton" class="sub-button" type="button">
-                名前を保存
+            <div class="cloud-sync-buttons">
+              <button
+                id="cloudLoginButton"
+                class="cloud-sync-button primary"
+                type="button"
+              >
+                Googleでログイン
               </button>
-              <button id="clearCharacterNameButton" class="sub-button" type="button">
-                名前を消す
-              </button>
-            </div>
 
-            <div class="button-grid">
-              <button id="changeCharacterImageButton" class="sub-button" type="button">
-                キャラ画像を選択
+              <button
+                id="cloudLogoutButton"
+                class="cloud-sync-button"
+                type="button"
+                disabled
+              >
+                ログアウト
               </button>
-              <button id="resetCharacterImageButton" class="sub-button" type="button">
-                初期画像に戻す
+
+              <button
+                id="cloudLoadButton"
+                class="cloud-sync-button"
+                type="button"
+                disabled
+              >
+                最新データを読み込む
+              </button>
+
+              <button
+                id="cloudSaveButton"
+                class="cloud-sync-button"
+                type="button"
+                disabled
+              >
+                クラウドに保存
               </button>
             </div>
 
             <div class="notice">
-              キャラ名はセーブコード・セーブファイルに含まれます。
-              画像とカラーテーマは、この端末のブラウザ内に保存されます。
+              ログイン後は、ローカル保存を維持したままクラウドにも保存します。
+              別端末で新しいデータが見つかった場合は、読み込み確認を表示する想定です。
             </div>
+          </section>
 
-            <input
-              id="characterImageInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              hidden
-            />
-          </div>
-        </details>
+          <section class="tools-area menu-tools-area">
+            <details class="tool-panel">
+              <summary>表示設定</summary>
+              <div class="tool-content">
+                <div class="setting-field">
+                  <label class="setting-label" for="themeSelect">カラーテーマ</label>
+                  <select id="themeSelect" class="theme-select"></select>
+                </div>
 
-        <details class="tool-panel">
-          <summary>セーブ</summary>
-          <div class="tool-content">
-            <div class="button-grid">
-              <button id="downloadSaveButton" class="sub-button" type="button">
-                ファイル保存
-              </button>
-              <button id="generateCodeButton" class="sub-button" type="button">
-                コード生成
-              </button>
-            </div>
+                <div class="setting-field">
+                  <label class="setting-label" for="characterNameInput"
+                    >キャラの名前</label
+                  >
+                  <input
+                    id="characterNameInput"
+                    class="text-input"
+                    type="text"
+                    maxlength="20"
+                    placeholder="名前を入力"
+                  />
+                </div>
 
-            <textarea
-              id="saveCodeOutput"
-              class="save-code"
-              readonly
-              placeholder="セーブコードがここに表示されます"
-            ></textarea>
+                <div class="button-grid">
+                  <button id="saveCharacterNameButton" class="sub-button" type="button">
+                    名前を保存
+                  </button>
+                  <button id="clearCharacterNameButton" class="sub-button" type="button">
+                    名前を消す
+                  </button>
+                </div>
 
-            <button id="copyCodeButton" class="sub-button" type="button">
-              コードをコピー
-            </button>
-          </div>
-        </details>
+                <div class="button-grid">
+                  <button
+                    id="changeCharacterImageButton"
+                    class="sub-button"
+                    type="button"
+                  >
+                    キャラ画像を選択
+                  </button>
+                  <button id="resetCharacterImageButton" class="sub-button" type="button">
+                    初期画像に戻す
+                  </button>
+                </div>
 
-        <details class="tool-panel">
-          <summary>ロード</summary>
-          <div class="tool-content">
-            <button id="loadFileButton" class="sub-button" type="button">
-              ファイルからロード
-            </button>
+                <div class="notice">
+                  キャラ名はセーブコード・セーブファイルに含まれます。
+                  画像とカラーテーマは、この端末のブラウザ内に保存されます。
+                </div>
 
-            <textarea
-              id="saveCodeInput"
-              class="save-code"
-              placeholder="セーブコードをここに貼り付け"
-            ></textarea>
+                <input
+                  id="characterImageInput"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  hidden
+                />
+              </div>
+            </details>
 
-            <button id="loadCodeButton" class="sub-button" type="button">
-              コードからロード
-            </button>
+            <details class="tool-panel">
+              <summary>セーブ</summary>
+              <div class="tool-content">
+                <div class="button-grid">
+                  <button id="downloadSaveButton" class="sub-button" type="button">
+                    ファイル保存
+                  </button>
+                  <button id="generateCodeButton" class="sub-button" type="button">
+                    コード生成
+                  </button>
+                </div>
 
-            <input
-              id="saveFileInput"
-              type="file"
-              accept="application/json,.json"
-              hidden
-            />
-          </div>
-        </details>
+                <textarea
+                  id="saveCodeOutput"
+                  class="save-code"
+                  readonly
+                  placeholder="セーブコードがここに表示されます"
+                ></textarea>
 
-        <details class="tool-panel">
-          <summary>データ管理</summary>
-          <div class="tool-content">
-            <div class="notice">
-              リセットする場合は、下の入力欄に <strong>RESET</strong> と入力してください。
-              現在の進行データは消えます。
-            </div>
+                <button id="copyCodeButton" class="sub-button" type="button">
+                  コードをコピー
+                </button>
+              </div>
+            </details>
 
-            <input
-              id="resetConfirmInput"
-              class="text-input"
-              type="text"
-              placeholder="RESET と入力"
-            />
+            <details class="tool-panel">
+              <summary>ロード</summary>
+              <div class="tool-content">
+                <button id="loadFileButton" class="sub-button" type="button">
+                  ファイルからロード
+                </button>
 
-            <button
-              id="resetButton"
-              class="sub-button danger-button"
-              type="button"
-              disabled
-            >
-              データリセット
-            </button>
-          </div>
-        </details>
-      </section>
+                <textarea
+                  id="saveCodeInput"
+                  class="save-code"
+                  placeholder="セーブコードをここに貼り付け"
+                ></textarea>
+
+                <button id="loadCodeButton" class="sub-button" type="button">
+                  コードからロード
+                </button>
+
+                <input
+                  id="saveFileInput"
+                  type="file"
+                  accept="application/json,.json"
+                  hidden
+                />
+              </div>
+            </details>
+
+            <details class="tool-panel">
+              <summary>データ管理</summary>
+              <div class="tool-content">
+                <div class="notice">
+                  リセットする場合は、下の入力欄に
+                  <strong>RESET</strong> と入力してください。 現在の進行データは消えます。
+                </div>
+
+                <input
+                  id="resetConfirmInput"
+                  class="text-input"
+                  type="text"
+                  placeholder="RESET と入力"
+                />
+
+                <button
+                  id="resetButton"
+                  class="sub-button danger-button"
+                  type="button"
+                  disabled
+                >
+                  データリセット
+                </button>
+              </div>
+            </details>
+          </section>
+        </div>
+      </aside>
     </main>
 
     <script>
@@ -2481,6 +2750,18 @@
       const SKILL_MAP = Object.fromEntries(ALL_SKILLS.map((skill) => [skill.id, skill]));
 
       const reloadButton = document.getElementById("reloadButton");
+      const menuButton = document.getElementById("menuButton");
+      const menuCloseButton = document.getElementById("menuCloseButton");
+      const menuOverlay = document.getElementById("menuOverlay");
+      const hamburgerMenu = document.getElementById("hamburgerMenu");
+
+      const cloudAccountStatusEl = document.getElementById("cloudAccountStatus");
+      const cloudSyncStatusEl = document.getElementById("cloudSyncStatus");
+      const cloudLoginButton = document.getElementById("cloudLoginButton");
+      const cloudLogoutButton = document.getElementById("cloudLogoutButton");
+      const cloudLoadButton = document.getElementById("cloudLoadButton");
+      const cloudSaveButton = document.getElementById("cloudSaveButton");
+
       const themeColorMeta = document.querySelector('meta[name="theme-color"]');
 
       const dailyPopupStack = document.getElementById("dailyPopupStack");
@@ -2764,6 +3045,50 @@
         if (shouldSave) {
           localStorage.setItem(THEME_KEY, theme.id);
         }
+      }
+
+      function openHamburgerMenu() {
+        menuOverlay.hidden = false;
+        hamburgerMenu.hidden = false;
+
+        requestAnimationFrame(() => {
+          menuOverlay.classList.add("is-open");
+          hamburgerMenu.classList.add("is-open");
+        });
+
+        menuButton.setAttribute("aria-expanded", "true");
+        hamburgerMenu.setAttribute("aria-hidden", "false");
+      }
+
+      function closeHamburgerMenu() {
+        menuOverlay.classList.remove("is-open");
+        hamburgerMenu.classList.remove("is-open");
+
+        menuButton.setAttribute("aria-expanded", "false");
+        hamburgerMenu.setAttribute("aria-hidden", "true");
+
+        setTimeout(() => {
+          if (!hamburgerMenu.classList.contains("is-open")) {
+            menuOverlay.hidden = true;
+          }
+        }, 220);
+      }
+
+      function updateCloudSyncMenu() {
+        cloudAccountStatusEl.textContent = "未ログイン";
+        cloudSyncStatusEl.textContent =
+          "Firebase設定後に、Googleログイン・クラウド保存・別端末更新チェックを有効化します。";
+
+        cloudLoginButton.disabled = false;
+        cloudLogoutButton.disabled = true;
+        cloudLoadButton.disabled = true;
+        cloudSaveButton.disabled = true;
+      }
+
+      function showCloudSyncNotReady() {
+        alert(
+          "Firebase設定を追加すると有効になります。\n\n次の段階で、Firebase Authentication と Firestore の接続処理をこのメニューに実装します。",
+        );
       }
 
       function setupThemeSelect() {
@@ -3619,6 +3944,11 @@
         }
 
         if (boughtCount <= 0) return;
+
+        // 一括購入はデイリー購入数ミッションの対象にする。
+        // ただし、満腹・元気・贅沢ゲージの回復や食事バフは発生させない。
+        incrementDailyPurchaseCount(type, boughtCount);
+        processDailyMissions();
 
         updateAll();
         saveLocal();
@@ -4620,6 +4950,40 @@
         window.location.replace(cacheBustUrl);
       });
 
+      menuButton.addEventListener("click", () => {
+        openHamburgerMenu();
+      });
+
+      menuCloseButton.addEventListener("click", () => {
+        closeHamburgerMenu();
+      });
+
+      menuOverlay.addEventListener("click", () => {
+        closeHamburgerMenu();
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeHamburgerMenu();
+        }
+      });
+
+      cloudLoginButton.addEventListener("click", () => {
+        showCloudSyncNotReady();
+      });
+
+      cloudLogoutButton.addEventListener("click", () => {
+        showCloudSyncNotReady();
+      });
+
+      cloudLoadButton.addEventListener("click", () => {
+        showCloudSyncNotReady();
+      });
+
+      cloudSaveButton.addEventListener("click", () => {
+        showCloudSyncNotReady();
+      });
+
       themeSelect.addEventListener("change", () => {
         applyTheme(themeSelect.value, true);
       });
@@ -4866,6 +5230,7 @@
       setupThemeSelect();
       loadSavedCharacterImage();
       loadLocal();
+      updateCloudSyncMenu();
       syncCharacterNameDisplay();
       applyCareDecay();
 
