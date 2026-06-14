@@ -345,7 +345,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 0.025em;
+        gap: 0.02em;
         margin-left: 0.08em;
         min-width: 0;
         vertical-align: middle;
@@ -548,9 +548,9 @@
         display: none;
       }
 
-      .love-mini-panel {
-        width: 116px;
-        flex: 0 0 116px;
+      .care-side-panel {
+        width: 132px;
+        flex: 0 0 132px;
         min-height: 0;
         padding: 8px;
         border-radius: 16px;
@@ -560,19 +560,109 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 8px;
+        gap: 7px;
         backdrop-filter: blur(2px);
       }
 
-      .love-mini-label {
+      .care-gauge-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .care-gauge-row {
+        display: grid;
+        gap: 3px;
+      }
+
+      .care-gauge-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
         font-size: 10px;
+        line-height: 1.1;
+      }
+
+      .care-gauge-label {
+        font-weight: 900;
+        color: var(--muted);
+      }
+
+      .care-gauge-value {
+        font-weight: 900;
+        color: var(--accent);
+      }
+
+      .care-gauge-track {
+        width: 100%;
+        height: 6px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--neutral-button) 78%, transparent);
+        overflow: hidden;
+      }
+
+      .care-gauge-fill {
+        width: 100%;
+        height: 100%;
+        border-radius: inherit;
+        background: var(--accent);
+        transition: width 180ms ease;
+      }
+
+      .care-shortcut-button {
+        width: 100%;
+        border: none;
+        border-radius: 8px;
+        padding: 4px 3px;
+        background: var(--neutral-button);
+        color: var(--text);
+        font-size: 10px;
+        font-weight: 900;
+        line-height: 1.15;
+        cursor: pointer;
+      }
+
+      .care-shortcut-button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
+      .care-buff-info {
+        min-height: 1.2em;
+        font-size: 9px;
+        font-weight: 800;
+        line-height: 1.25;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .love-mini-panel {
+        width: 100%;
+        flex: 0 0 auto;
+        min-height: auto;
+        padding: 6px;
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--panel-soft) 88%, transparent);
+        box-shadow: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .love-mini-panel[hidden] {
+        display: none;
+      }
+
+      .love-mini-label {
+        font-size: 9px;
         font-weight: 800;
         color: var(--muted);
         text-align: center;
       }
 
       .love-mini-value {
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 900;
         color: var(--accent);
         text-align: center;
@@ -584,13 +674,13 @@
       .love-mini-button {
         width: 100%;
         border: none;
-        border-radius: 12px;
-        padding: 8px 4px;
+        border-radius: 9px;
+        padding: 5px 3px;
         background: var(--accent);
         color: var(--accent-contrast);
-        font-size: 11px;
+        font-size: 10px;
         font-weight: 900;
-        line-height: 1.25;
+        line-height: 1.2;
         cursor: pointer;
       }
 
@@ -1486,20 +1576,74 @@
             </div>
           </button>
 
-          <section class="love-mini-panel" aria-label="愛情ポイント操作">
-            <div class="love-mini-label">
-              <span class="resource-label">
-                <span class="material-symbols-rounded resource-icon" aria-hidden="true"
-                  >digital_wellbeing</span
+          <aside class="care-side-panel" aria-label="育成ステータス">
+            <div class="care-gauge-list">
+              <div class="care-gauge-row">
+                <div class="care-gauge-header">
+                  <span class="care-gauge-label">満腹</span>
+                  <span id="careFullnessValue" class="care-gauge-value">100</span>
+                </div>
+                <div class="care-gauge-track">
+                  <div id="careFullnessFill" class="care-gauge-fill"></div>
+                </div>
+                <button
+                  id="careFullnessButton"
+                  class="care-shortcut-button"
+                  type="button"
                 >
-                <span>愛情</span>
-              </span>
+                  食事
+                </button>
+              </div>
+
+              <div class="care-gauge-row">
+                <div class="care-gauge-header">
+                  <span class="care-gauge-label">元気</span>
+                  <span id="careEnergyValue" class="care-gauge-value">100</span>
+                </div>
+                <div class="care-gauge-track">
+                  <div id="careEnergyFill" class="care-gauge-fill"></div>
+                </div>
+                <button id="careEnergyButton" class="care-shortcut-button" type="button">
+                  元気
+                </button>
+              </div>
+
+              <div class="care-gauge-row">
+                <div class="care-gauge-header">
+                  <span class="care-gauge-label">贅沢</span>
+                  <span id="careLuxuryValue" class="care-gauge-value">100</span>
+                </div>
+                <div class="care-gauge-track">
+                  <div id="careLuxuryFill" class="care-gauge-fill"></div>
+                </div>
+                <button id="careLuxuryButton" class="care-shortcut-button" type="button">
+                  贅沢
+                </button>
+              </div>
             </div>
-            <div id="lovePointsMini" class="love-mini-value">0</div>
-            <button id="loveOfferMiniButton" class="love-mini-button" type="button">
-              捧げる
-            </button>
-          </section>
+
+            <div id="careBuffInfo" class="care-buff-info"></div>
+
+            <section
+              id="loveMiniPanel"
+              class="love-mini-panel"
+              aria-label="愛情ポイント操作"
+              hidden
+            >
+              <div class="love-mini-label">
+                <span class="resource-label">
+                  <span class="material-symbols-rounded resource-icon" aria-hidden="true"
+                    >digital_wellbeing</span
+                  >
+                  <span>愛情</span>
+                </span>
+              </div>
+              <div id="lovePointsMini" class="love-mini-value">0</div>
+              <button id="loveOfferMiniButton" class="love-mini-button" type="button">
+                捧げる
+              </button>
+            </section>
+          </aside>
         </div>
       </section>
 
@@ -1787,6 +1931,98 @@
 
       const ITEM_SELF_BONUS_STEP_COUNT = 10;
       const ITEM_SELF_BONUS_PERCENT_PER_STEP = 10;
+
+      const CARE_MAX = 10000;
+
+      const CARE_DECAY_PER_HOUR = {
+        fullness: 800,
+        energy: 300,
+        luxury: 100,
+      };
+
+      const CARE_AUTO_PENALTY_MAX = {
+        fullness: 35,
+        energy: 20,
+        luxury: 15,
+      };
+
+      const CARE_AUTO_MODIFIER_MIN_PERCENT = 30;
+      const MEAL_BUFF_PERCENT = 10;
+      const MEAL_BUFF_DURATION_MS = 30 * 60 * 1000;
+
+      const MEAL_SLOTS = [
+        {
+          id: "breakfast",
+          label: "朝ごはん",
+          startMinute: 5 * 60,
+          endMinute: 10 * 60 + 59,
+        },
+        {
+          id: "lunch",
+          label: "昼ごはん",
+          startMinute: 11 * 60,
+          endMinute: 14 * 60 + 59,
+        },
+        {
+          id: "dinner",
+          label: "夜ごはん",
+          startMinute: 17 * 60,
+          endMinute: 22 * 60 + 59,
+        },
+      ];
+
+      const CARE_SHORTCUT_ITEM_IDS = {
+        fullness: ["auto_1", "auto_2", "auto_3", "auto_9"],
+        energy: [
+          "auto_4",
+          "auto_5",
+          "auto_6",
+          "auto_7",
+          "auto_8",
+          "auto_9",
+          "auto_11",
+          "auto_13",
+          "auto_18",
+        ],
+        luxury: [
+          "auto_8",
+          "auto_9",
+          "auto_10",
+          "auto_11",
+          "auto_12",
+          "auto_13",
+          "auto_14",
+          "auto_15",
+          "auto_16",
+          "auto_17",
+          "auto_18",
+          "auto_19",
+          "auto_20",
+        ],
+      };
+
+      const AUTO_ITEM_CARE_EFFECTS = {
+        auto_1: { fullness: 1800, energy: 300, luxury: 100, meal: true },
+        auto_2: { fullness: 2800, energy: 400, luxury: 100, meal: true },
+        auto_3: { fullness: 1200, energy: 500, luxury: 100, meal: true },
+        auto_4: { fullness: 0, energy: 2200, luxury: 200, meal: false },
+        auto_5: { fullness: 0, energy: 1800, luxury: 600, meal: false },
+        auto_6: { fullness: 0, energy: 2400, luxury: 400, meal: false },
+        auto_7: { fullness: 0, energy: 1200, luxury: 800, meal: false },
+        auto_8: { fullness: 0, energy: 2500, luxury: 1800, meal: false },
+        auto_9: { fullness: 3500, energy: 1000, luxury: 2500, meal: true },
+        auto_10: { fullness: 0, energy: 1600, luxury: 3000, meal: false },
+        auto_11: { fullness: 0, energy: 2800, luxury: 3500, meal: false },
+        auto_12: { fullness: 0, energy: 800, luxury: 2000, meal: false },
+        auto_13: { fullness: 0, energy: 2800, luxury: 3800, meal: false },
+        auto_14: { fullness: 0, energy: 0, luxury: 4500, meal: false },
+        auto_15: { fullness: 0, energy: 1200, luxury: 5500, meal: false },
+        auto_16: { fullness: 0, energy: 2000, luxury: 7000, meal: false },
+        auto_17: { fullness: 0, energy: 0, luxury: 7500, meal: false },
+        auto_18: { fullness: 0, energy: 3500, luxury: 8500, meal: false },
+        auto_19: { fullness: 0, energy: 0, luxury: 9500, meal: false },
+        auto_20: { fullness: 0, energy: 0, luxury: 10000, meal: false },
+      };
 
       const AUTO_TAP_BONUS_NUMERATOR = 25n;
       const AUTO_TAP_BONUS_DENOMINATOR = 100n;
@@ -2287,10 +2523,24 @@
       const skillListEl = document.getElementById("skillList");
 
       const lovePointsEl = document.getElementById("lovePoints");
+      const loveMiniPanel = document.getElementById("loveMiniPanel");
       const lovePointsMiniEl = document.getElementById("lovePointsMini");
       const loveCostEl = document.getElementById("loveCost");
       const loveOfferButton = document.getElementById("loveOfferButton");
       const loveOfferMiniButton = document.getElementById("loveOfferMiniButton");
+
+      const careFullnessValueEl = document.getElementById("careFullnessValue");
+      const careEnergyValueEl = document.getElementById("careEnergyValue");
+      const careLuxuryValueEl = document.getElementById("careLuxuryValue");
+
+      const careFullnessFillEl = document.getElementById("careFullnessFill");
+      const careEnergyFillEl = document.getElementById("careEnergyFill");
+      const careLuxuryFillEl = document.getElementById("careLuxuryFill");
+
+      const careFullnessButton = document.getElementById("careFullnessButton");
+      const careEnergyButton = document.getElementById("careEnergyButton");
+      const careLuxuryButton = document.getElementById("careLuxuryButton");
+      const careBuffInfoEl = document.getElementById("careBuffInfo");
 
       const tapCountEl = document.getElementById("tapCount");
       const maxAffectionRecordEl = document.getElementById("maxAffectionRecord");
@@ -2360,6 +2610,7 @@
 
       const validAutoItemIds = new Set(autoItems.map((item) => item.id));
       const validTapItemIds = new Set(tapItems.map((item) => item.id));
+      const AUTO_ITEM_MAP = Object.fromEntries(autoItems.map((item) => [item.id, item]));
 
       let state = createDefaultState();
       let activeShopType = "auto";
@@ -2435,6 +2686,22 @@
         };
       }
 
+      function createDefaultCareState(now = Date.now()) {
+        return {
+          fullness: CARE_MAX,
+          energy: CARE_MAX,
+          luxury: CARE_MAX,
+          lastUpdatedAt: now,
+          mealBuffUntil: 0,
+          mealSlots: {
+            dateKey: getLocalDateKey(),
+            breakfast: false,
+            lunch: false,
+            dinner: false,
+          },
+        };
+      }
+
       function createDefaultState() {
         return {
           version: 6,
@@ -2453,6 +2720,7 @@
           legacyTapItemCount: 0n,
           skills: {},
           daily: createDefaultDailyState(),
+          care: createDefaultCareState(),
           lastSavedAt: Date.now(),
         };
       }
@@ -2654,6 +2922,255 @@
 
       function getResourceLabelHtml(type, label) {
         return `<span class="resource-label">${getResourceIconHtml(type)}<span>${label}</span></span>`;
+      }
+
+      function clampCareValue(value) {
+        const numberValue = Number(value);
+
+        if (!Number.isFinite(numberValue)) {
+          return CARE_MAX;
+        }
+
+        return Math.max(0, Math.min(CARE_MAX, numberValue));
+      }
+
+      function formatCareValue(value) {
+        return String(Math.round(clampCareValue(value) / 100));
+      }
+
+      function getCarePercent(value) {
+        return clampCareValue(value) / CARE_MAX;
+      }
+
+      function sanitizeCareData(data) {
+        const defaultCare = createDefaultCareState();
+
+        if (!data || typeof data !== "object") {
+          return defaultCare;
+        }
+
+        const mealSlots =
+          data.mealSlots && typeof data.mealSlots === "object"
+            ? data.mealSlots
+            : defaultCare.mealSlots;
+
+        return {
+          fullness: clampCareValue(data.fullness),
+          energy: clampCareValue(data.energy),
+          luxury: clampCareValue(data.luxury),
+          lastUpdatedAt: Number(data.lastUpdatedAt) || Date.now(),
+          mealBuffUntil: Number(data.mealBuffUntil) || 0,
+          mealSlots: {
+            dateKey: mealSlots.dateKey || getLocalDateKey(),
+            breakfast: Boolean(mealSlots.breakfast),
+            lunch: Boolean(mealSlots.lunch),
+            dinner: Boolean(mealSlots.dinner),
+          },
+        };
+      }
+
+      function ensureMealSlotDate() {
+        const todayKey = getLocalDateKey();
+
+        if (!state.care.mealSlots || state.care.mealSlots.dateKey !== todayKey) {
+          state.care.mealSlots = {
+            dateKey: todayKey,
+            breakfast: false,
+            lunch: false,
+            dinner: false,
+          };
+        }
+      }
+
+      function ensureCareState() {
+        if (!state.care || typeof state.care !== "object") {
+          state.care = createDefaultCareState();
+        }
+
+        state.care = sanitizeCareData(state.care);
+        ensureMealSlotDate();
+      }
+
+      function applyCareDecay(now = Date.now()) {
+        ensureCareState();
+
+        const lastUpdatedAt = Number(state.care.lastUpdatedAt) || now;
+        const elapsedMs = Math.max(0, now - lastUpdatedAt);
+
+        if (elapsedMs <= 0) return;
+
+        const elapsedHours = elapsedMs / (60 * 60 * 1000);
+
+        state.care.fullness = clampCareValue(
+          state.care.fullness - CARE_DECAY_PER_HOUR.fullness * elapsedHours,
+        );
+        state.care.energy = clampCareValue(
+          state.care.energy - CARE_DECAY_PER_HOUR.energy * elapsedHours,
+        );
+        state.care.luxury = clampCareValue(
+          state.care.luxury - CARE_DECAY_PER_HOUR.luxury * elapsedHours,
+        );
+
+        state.care.lastUpdatedAt = now;
+      }
+
+      function addCareValue(type, amount) {
+        ensureCareState();
+
+        if (!Object.prototype.hasOwnProperty.call(state.care, type)) {
+          return;
+        }
+
+        state.care[type] = clampCareValue(state.care[type] + Number(amount || 0));
+      }
+
+      function getCurrentMealSlot(date = new Date()) {
+        const currentMinute = date.getHours() * 60 + date.getMinutes();
+
+        return MEAL_SLOTS.find((slot) => {
+          return currentMinute >= slot.startMinute && currentMinute <= slot.endMinute;
+        });
+      }
+
+      function isMealBuffActive() {
+        ensureCareState();
+        return Date.now() < Number(state.care.mealBuffUntil || 0);
+      }
+
+      function getActiveMealBuffPercent() {
+        return isMealBuffActive() ? MEAL_BUFF_PERCENT : 0;
+      }
+
+      function maybeApplyMealBuff(item) {
+        ensureCareState();
+
+        const effect = AUTO_ITEM_CARE_EFFECTS[item.id];
+
+        if (!effect || !effect.meal) return;
+
+        const currentSlot = getCurrentMealSlot();
+        if (!currentSlot) return;
+
+        ensureMealSlotDate();
+
+        if (state.care.mealSlots[currentSlot.id]) {
+          return;
+        }
+
+        state.care.mealSlots[currentSlot.id] = true;
+        state.care.mealBuffUntil = Date.now() + MEAL_BUFF_DURATION_MS;
+
+        addCareValue("fullness", 2500);
+        addCareValue("energy", 500);
+      }
+
+      function applyCareGainForItem(item) {
+        if (!item || item.type !== "auto") return;
+
+        applyCareDecay();
+
+        const effect = AUTO_ITEM_CARE_EFFECTS[item.id];
+        if (!effect) return;
+
+        addCareValue("fullness", effect.fullness || 0);
+        addCareValue("energy", effect.energy || 0);
+        addCareValue("luxury", effect.luxury || 0);
+
+        maybeApplyMealBuff(item);
+      }
+
+      function getCareAutoModifierPercent() {
+        ensureCareState();
+
+        const fullnessPenalty =
+          (1 - getCarePercent(state.care.fullness)) * CARE_AUTO_PENALTY_MAX.fullness;
+        const energyPenalty =
+          (1 - getCarePercent(state.care.energy)) * CARE_AUTO_PENALTY_MAX.energy;
+        const luxuryPenalty =
+          (1 - getCarePercent(state.care.luxury)) * CARE_AUTO_PENALTY_MAX.luxury;
+
+        const modifier =
+          100 -
+          fullnessPenalty -
+          energyPenalty -
+          luxuryPenalty +
+          getActiveMealBuffPercent();
+
+        return Math.max(CARE_AUTO_MODIFIER_MIN_PERCENT, Math.round(modifier));
+      }
+
+      function getCareShortcutItem(type) {
+        const ids = CARE_SHORTCUT_ITEM_IDS[type] || [];
+        let selectedItem = null;
+        let selectedCost = null;
+
+        for (const id of ids) {
+          const item = AUTO_ITEM_MAP[id];
+          if (!item) continue;
+
+          if (BigInt(item.unlockAt) > state.bestAffection) continue;
+
+          const cost = getItemCost(item);
+          if (state.affection < cost) continue;
+
+          if (selectedCost === null || cost < selectedCost) {
+            selectedItem = item;
+            selectedCost = cost;
+          }
+        }
+
+        return selectedItem;
+      }
+
+      function buyCareShortcut(type) {
+        const item = getCareShortcutItem(type);
+        if (!item) return;
+
+        buyItem(item);
+      }
+
+      function getCareBuffInfoText() {
+        const currentSlot = getCurrentMealSlot();
+
+        if (isMealBuffActive()) {
+          const remainingMs = Math.max(0, Number(state.care.mealBuffUntil) - Date.now());
+          const remainingMinutes = Math.ceil(remainingMs / 60000);
+          return `食事バフ中：自動 +${MEAL_BUFF_PERCENT}% / 残り${remainingMinutes}分`;
+        }
+
+        if (currentSlot) {
+          ensureMealSlotDate();
+
+          if (state.care.mealSlots[currentSlot.id]) {
+            return `${currentSlot.label}済み`;
+          }
+
+          return `${currentSlot.label}：食事購入で自動 +${MEAL_BUFF_PERCENT}%`;
+        }
+
+        return "食事時間：5-11 / 11-15 / 17-23";
+      }
+
+      function updateCareArea() {
+        applyCareDecay();
+
+        const fullness = clampCareValue(state.care.fullness);
+        const energy = clampCareValue(state.care.energy);
+        const luxury = clampCareValue(state.care.luxury);
+
+        careFullnessValueEl.textContent = formatCareValue(fullness);
+        careEnergyValueEl.textContent = formatCareValue(energy);
+        careLuxuryValueEl.textContent = formatCareValue(luxury);
+
+        careFullnessFillEl.style.width = `${Math.round(fullness / 100)}%`;
+        careEnergyFillEl.style.width = `${Math.round(energy / 100)}%`;
+        careLuxuryFillEl.style.width = `${Math.round(luxury / 100)}%`;
+
+        careFullnessButton.disabled = !getCareShortcutItem("fullness");
+        careEnergyButton.disabled = !getCareShortcutItem("energy");
+        careLuxuryButton.disabled = !getCareShortcutItem("luxury");
+
+        careBuffInfoEl.textContent = getCareBuffInfoText();
       }
 
       function getAdaptiveStatusSubFontSize(text) {
@@ -3028,7 +3545,9 @@
 
       function getAffectionPerSecond() {
         const base = getBaseAffectionPerSecond();
-        return applyPercent(base, getAutoMultiplierPercent());
+        const afterSkill = applyPercent(base, getAutoMultiplierPercent());
+
+        return applyPercent(afterSkill, getCareAutoModifierPercent());
       }
 
       function getBaseTapPower() {
@@ -3088,6 +3607,11 @@
           if (state.affection >= cost) {
             state.affection -= cost;
             setItemCount(item, getItemCount(item) + 1);
+
+            if (type === "auto") {
+              applyCareGainForItem(item);
+            }
+
             boughtCount++;
           }
         }
@@ -3131,6 +3655,8 @@
 
         state.affection -= cost;
         setItemCount(item, getItemCount(item) + 1);
+
+        applyCareGainForItem(item);
 
         updateAll();
         saveLocal();
@@ -3631,7 +4157,8 @@
 
         skillInfoEl.innerHTML =
           `${getResourceLabelHtml("loveCrystal", SKILL_RESOURCE_NAME)}: ${formatLargeNumber(state.loveCrystals)}個<br>` +
-          `自動 ${formatMultiplierFromPercent(autoPercent)} / タップ ${formatMultiplierFromPercent(tapPercent)}`;
+          `自動 ${formatMultiplierFromPercent(autoPercent)} / 育成 ${formatMultiplierFromPercent(getCareAutoModifierPercent())}<br>` +
+          `タップ ${formatMultiplierFromPercent(tapPercent)}`;
 
         skillListEl.innerHTML = "";
 
@@ -3666,6 +4193,8 @@
 
         loveOfferMiniButton.disabled = !canOffer;
         loveOfferMiniButton.innerHTML = canOffer ? "捧げる<br />+1" : "不足";
+
+        loveMiniPanel.hidden = state.lovePoints <= 0n;
       }
 
       function updateAchievementArea() {
@@ -3705,8 +4234,10 @@
 
       function updateAll() {
         ensureDailyState();
+        applyCareDecay();
         updateShopTabs();
         updateStats();
+        updateCareArea();
         updateDailyArea();
         updateSkillTreeArea();
         updateLoveArea();
@@ -3812,6 +4343,7 @@
           legacyTapItemCount: state.legacyTapItemCount.toString(),
           skills: state.skills,
           daily: state.daily,
+          care: state.care,
           lastSavedAt: state.lastSavedAt,
         };
       }
@@ -3984,6 +4516,7 @@
 
         cleanData.skills = sanitizeSkillsData(data.skills);
         cleanData.daily = sanitizeDailyData(data.daily);
+        cleanData.care = sanitizeCareData(data.care);
 
         return cleanData;
       }
@@ -4148,6 +4681,18 @@
         bulkBuyItems("tap");
       });
 
+      careFullnessButton.addEventListener("click", () => {
+        buyCareShortcut("fullness");
+      });
+
+      careEnergyButton.addEventListener("click", () => {
+        buyCareShortcut("energy");
+      });
+
+      careLuxuryButton.addEventListener("click", () => {
+        buyCareShortcut("luxury");
+      });
+
       loveOfferButton.addEventListener("click", () => {
         offerLovePoint();
       });
@@ -4250,8 +4795,14 @@
       });
 
       setInterval(() => {
+        applyCareDecay();
+
         const perSecond = getAffectionPerSecond();
-        if (perSecond <= 0n) return;
+        if (perSecond <= 0n) {
+          updateCareArea();
+          queueSave();
+          return;
+        }
 
         addAffection(perSecond);
       }, 1000);
@@ -4282,6 +4833,7 @@
       loadSavedCharacterImage();
       loadLocal();
       syncCharacterNameDisplay();
+      applyCareDecay();
 
       const offlineResult = applyOfflineProgress();
 
