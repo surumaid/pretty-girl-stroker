@@ -2017,8 +2017,8 @@
             </div>
 
             <div class="notice">
-              ログイン後は、ローカル保存を維持したままクラウドにも保存します。
-              別端末で新しいデータが見つかった場合は、読み込み確認を表示する想定です。
+              ログイン後は、ローカル保存を維持したままクラウド保存・読み込みができます。
+              別端末で新しいデータが見つかった場合は、同期状態に表示します。
             </div>
           </section>
 
@@ -2919,6 +2919,14 @@
       let renderedUnlockedCount = -1;
       let saveTimer = null;
       let cloudUser = null;
+      let localCloudRevision = 0;
+      let unsubscribeCloudSave = null;
+      let hasCheckedCloudOnStartup = false;
+      let isCheckingCloudOnStartup = false;
+
+      const CLOUD_META_KEY = "affection_clicker_cloud_meta_v1";
+      const DEVICE_ID_KEY = "affection_clicker_device_id_v1";
+      const CLOUD_SAVE_DOC_ID = "main";
 
       const itemElements = new Map();
 
@@ -3115,11 +3123,65 @@
         return user.email || user.displayName || user.uid || "ログイン済み";
       }
 
-      function updateCloudSyncMenu() {
+      function getDeviceId() {
+        let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+
+        if (!deviceId) {
+          if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            deviceId = window.crypto.randomUUID();
+          } else {
+            deviceId = `device_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+          }
+
+          localStorage.setItem(DEVICE_ID_KEY, deviceId);
+        }
+
+        return deviceId;
+      }
+
+      const deviceId = getDeviceId();
+
+      function getCloudSaveRef(uid) {
+        return doc(db, "users", uid, "saves", CLOUD_SAVE_DOC_ID);
+      }
+
+      function loadCloudMeta(uid) {
+        try {
+          const raw = localStorage.getItem(CLOUD_META_KEY);
+          if (!raw) return 0;
+
+          const meta = JSON.parse(raw);
+          if (!meta || meta.uid !== uid) return 0;
+
+          return Math.max(0, Math.floor(Number(meta.revision) || 0));
+        } catch (error) {
+          console.warn("クラウド同期メタ情報を読み込めませんでした。", error);
+          return 0;
+        }
+      }
+
+      function saveCloudMeta(uid, revision) {
+        if (!uid) return;
+
+        const cleanRevision = Math.max(0, Math.floor(Number(revision) || 0));
+        localCloudRevision = cleanRevision;
+
+        localStorage.setItem(
+          CLOUD_META_KEY,
+          JSON.stringify({
+            uid,
+            revision: cleanRevision,
+            deviceId,
+            savedAt: Date.now(),
+          }),
+        );
+      }
+
+      function updateCloudSyncMenu(message = "") {
         if (!cloudUser) {
           cloudAccountStatusEl.textContent = "未ログイン";
           cloudSyncStatusEl.textContent =
-            "Googleログインできます。クラウド保存・読み込みは次の段階で実装します。";
+            message || "Googleログインするとクラウド保存・読み込みを使えます。";
 
           cloudLoginButton.disabled = false;
           cloudLogoutButton.disabled = true;
@@ -3130,12 +3192,23 @@
 
         cloudAccountStatusEl.textContent = getCloudUserDisplayName(cloudUser);
         cloudSyncStatusEl.textContent =
-          "ログイン済みです。クラウド保存・読み込みは次の段階で実装します。";
+          message || `ログイン済みです。クラウド同期 revision ${localCloudRevision}`;
 
         cloudLoginButton.disabled = true;
         cloudLogoutButton.disabled = false;
-        cloudLoadButton.disabled = true;
-        cloudSaveButton.disabled = true;
+        cloudLoadButton.disabled = false;
+        cloudSaveButton.disabled = false;
+      }
+
+      function setCloudButtonsDisabled(isDisabled) {
+        if (!cloudUser) {
+          updateCloudSyncMenu();
+          return;
+        }
+
+        cloudLogoutButton.disabled = isDisabled;
+        cloudLoadButton.disabled = isDisabled;
+        cloudSaveButton.disabled = isDisabled;
       }
 
       function getFirebaseAuthErrorMessage(error) {
@@ -3168,6 +3241,23 @@
         }
 
         return "Googleログインに失敗しました。Firebase Consoleの設定とブラウザのコンソールを確認してください。";
+      }
+
+      function getFirestoreErrorMessage(error, fallbackMessage) {
+        const code = error && error.code ? String(error.code) : "";
+
+        if (code === "permission-denied") {
+          return (
+            "Firestoreの権限がありません。\n\n" +
+            "Firestore Database の Rules が、users/{userId}/saves/{saveId} をログインユーザー本人だけ読み書き可能にする設定になっているか確認してください。"
+          );
+        }
+
+        if (code === "unavailable") {
+          return "Firestoreに接続できませんでした。通信状態を確認してください。";
+        }
+
+        return fallbackMessage;
       }
 
       async function signInCloud() {
@@ -3206,11 +3296,278 @@
         }
       }
 
-      function showCloudFeatureNotReady(featureName) {
-        alert(
-          `${featureName}は次の段階で実装します。\n\n` +
-            "現在はGoogleログイン・ログアウトのみ有効です。",
+      function startCloudSaveListener(user) {
+        if (unsubscribeCloudSave) {
+          unsubscribeCloudSave();
+          unsubscribeCloudSave = null;
+        }
+
+        if (!user) return;
+
+        const saveRef = getCloudSaveRef(user.uid);
+
+        unsubscribeCloudSave = onSnapshot(
+          saveRef,
+          (snapshot) => {
+            if (!snapshot.exists()) {
+              updateCloudSyncMenu("クラウド上にセーブデータはまだありません。");
+              return;
+            }
+
+            const remoteData = snapshot.data() || {};
+            const remoteRevision = Math.max(
+              0,
+              Math.floor(Number(remoteData.revision) || 0),
+            );
+            const remoteDeviceId = remoteData.updatedByDeviceId || "";
+
+            if (remoteDeviceId === deviceId && remoteRevision > localCloudRevision) {
+              saveCloudMeta(user.uid, remoteRevision);
+              updateCloudSyncMenu(
+                `この端末で保存済みです / revision ${localCloudRevision}`,
+              );
+              return;
+            }
+
+            if (remoteRevision > localCloudRevision) {
+              updateCloudSyncMenu(
+                `クラウド上に新しいデータがあります / revision ${remoteRevision}`,
+              );
+            }
+          },
+          (error) => {
+            console.error("クラウドセーブ監視に失敗しました。", error);
+            cloudSyncStatusEl.textContent = "クラウドセーブ監視に失敗しました。";
+          },
         );
+      }
+
+      async function checkCloudSaveOnStartup(user) {
+        if (!user || hasCheckedCloudOnStartup || isCheckingCloudOnStartup) {
+          return;
+        }
+
+        hasCheckedCloudOnStartup = true;
+        isCheckingCloudOnStartup = true;
+
+        const saveRef = getCloudSaveRef(user.uid);
+
+        cloudSyncStatusEl.textContent = "起動時にクラウドデータを確認しています…";
+
+        try {
+          const snapshot = await getDoc(saveRef);
+
+          if (!snapshot.exists()) {
+            updateCloudSyncMenu("クラウド上にセーブデータはまだありません。");
+            return;
+          }
+
+          const remoteData = snapshot.data() || {};
+          const remoteRevision = Math.max(
+            0,
+            Math.floor(Number(remoteData.revision) || 0),
+          );
+          const remoteDeviceId = remoteData.updatedByDeviceId || "";
+
+          if (remoteRevision <= localCloudRevision) {
+            updateCloudSyncMenu(
+              `この端末のデータはクラウドと同期済みです / revision ${localCloudRevision}`,
+            );
+            return;
+          }
+
+          if (remoteDeviceId === deviceId) {
+            saveCloudMeta(user.uid, remoteRevision);
+            updateCloudSyncMenu(
+              `この端末で保存済みです / revision ${localCloudRevision}`,
+            );
+            return;
+          }
+
+          updateCloudSyncMenu(
+            `別端末の新しいデータがあります / revision ${remoteRevision}`,
+          );
+
+          const shouldLoad = confirm(
+            "別端末で保存されたクラウドデータが見つかりました。\n\n" +
+              `クラウド revision：${remoteRevision}\n` +
+              `この端末 revision：${localCloudRevision}\n\n` +
+              "クラウドの最新データをこの端末に読み込みますか？\n\n" +
+              "OK：読み込む\n" +
+              "キャンセル：あとで手動で読み込む",
+          );
+
+          if (shouldLoad) {
+            await loadFromCloud({ skipConfirm: true });
+          }
+        } catch (error) {
+          console.error("起動時クラウド確認に失敗しました。", error);
+          cloudSyncStatusEl.textContent = "起動時クラウド確認に失敗しました。";
+        } finally {
+          isCheckingCloudOnStartup = false;
+          updateCloudSyncMenu(cloudSyncStatusEl.textContent);
+        }
+      }
+
+      async function saveToCloud(options = {}) {
+        if (!cloudUser) {
+          alert("先にGoogleログインしてください。");
+          return;
+        }
+
+        const force = options.force === true;
+        const saveRef = getCloudSaveRef(cloudUser.uid);
+
+        setCloudButtonsDisabled(true);
+        cloudSyncStatusEl.textContent = "クラウドへ保存しています…";
+
+        try {
+          const latestSnapshot = await getDoc(saveRef);
+
+          if (latestSnapshot.exists() && !force) {
+            const latestData = latestSnapshot.data() || {};
+            const remoteRevision = Math.max(
+              0,
+              Math.floor(Number(latestData.revision) || 0),
+            );
+            const remoteDeviceId = latestData.updatedByDeviceId || "";
+
+            if (remoteRevision > localCloudRevision && remoteDeviceId !== deviceId) {
+              const shouldOverwrite = confirm(
+                "クラウド上に、この端末より新しいセーブデータがあります。\n\n" +
+                  "OK：この端末のデータでクラウドを上書きする\n" +
+                  "キャンセル：保存を中止する",
+              );
+
+              if (!shouldOverwrite) {
+                updateCloudSyncMenu(
+                  `保存を中止しました。クラウド上の最新 revision ${remoteRevision}`,
+                );
+                return;
+              }
+            }
+          }
+
+          let nextRevision = localCloudRevision + 1;
+
+          await runTransaction(db, async (transaction) => {
+            const snapshot = await transaction.get(saveRef);
+            const remoteData = snapshot.exists() ? snapshot.data() || {} : {};
+            const remoteRevision = Math.max(
+              0,
+              Math.floor(Number(remoteData.revision) || 0),
+            );
+            const remoteDeviceId = remoteData.updatedByDeviceId || "";
+
+            if (
+              !force &&
+              remoteRevision > localCloudRevision &&
+              remoteDeviceId !== deviceId
+            ) {
+              throw new Error("REMOTE_SAVE_IS_NEWER");
+            }
+
+            nextRevision = Math.max(localCloudRevision, remoteRevision) + 1;
+
+            transaction.set(
+              saveRef,
+              {
+                saveData: serializeState(),
+                revision: nextRevision,
+                updatedAt: serverTimestamp(),
+                updatedByDeviceId: deviceId,
+                clientSavedAt: Date.now(),
+              },
+              { merge: true },
+            );
+          });
+
+          saveCloudMeta(cloudUser.uid, nextRevision);
+          updateCloudSyncMenu(`クラウド保存済み / revision ${localCloudRevision}`);
+        } catch (error) {
+          if (error && error.message === "REMOTE_SAVE_IS_NEWER") {
+            updateCloudSyncMenu(
+              "保存を中止しました。クラウド上に新しいデータがあります。",
+            );
+            alert(
+              "クラウド上に新しいセーブデータがあるため、保存を中止しました。\n\n" +
+                "先に『最新データを読み込む』を押すか、もう一度保存を試してください。",
+            );
+          } else {
+            console.error("クラウド保存に失敗しました。", error);
+            cloudSyncStatusEl.textContent = "クラウド保存に失敗しました。";
+            alert(
+              getFirestoreErrorMessage(
+                error,
+                "クラウド保存に失敗しました。ブラウザのコンソールを確認してください。",
+              ),
+            );
+          }
+        } finally {
+          updateCloudSyncMenu(cloudSyncStatusEl.textContent);
+        }
+      }
+
+      async function loadFromCloud(options = {}) {
+        if (!cloudUser) {
+          alert("先にGoogleログインしてください。");
+          return;
+        }
+
+        const saveRef = getCloudSaveRef(cloudUser.uid);
+
+        setCloudButtonsDisabled(true);
+        cloudSyncStatusEl.textContent = "クラウドから読み込んでいます…";
+
+        try {
+          const snapshot = await getDoc(saveRef);
+
+          if (!snapshot.exists()) {
+            updateCloudSyncMenu("クラウド上にセーブデータはまだありません。");
+            alert("クラウド上にセーブデータはまだありません。");
+            return;
+          }
+
+          const remoteData = snapshot.data() || {};
+
+          if (!remoteData.saveData || typeof remoteData.saveData !== "object") {
+            throw new Error("INVALID_CLOUD_SAVE_DATA");
+          }
+
+          const remoteRevision = Math.max(
+            0,
+            Math.floor(Number(remoteData.revision) || 0),
+          );
+
+          const shouldLoad =
+            options.skipConfirm === true ||
+            confirm(
+              "クラウドの最新データをこの端末に読み込みます。\n\n" +
+                "現在この端末にある進行データは上書きされます。よろしいですか？",
+            );
+
+          if (!shouldLoad) {
+            updateCloudSyncMenu("クラウド読み込みをキャンセルしました。");
+            return;
+          }
+
+          saveCloudMeta(cloudUser.uid, remoteRevision);
+          applySaveData(remoteData.saveData, true);
+          updateCloudSyncMenu(
+            `クラウドから読み込み済み / revision ${localCloudRevision}`,
+          );
+        } catch (error) {
+          console.error("クラウド読み込みに失敗しました。", error);
+          cloudSyncStatusEl.textContent = "クラウド読み込みに失敗しました。";
+          alert(
+            getFirestoreErrorMessage(
+              error,
+              "クラウド読み込みに失敗しました。ブラウザのコンソールを確認してください。",
+            ),
+          );
+        } finally {
+          updateCloudSyncMenu(cloudSyncStatusEl.textContent);
+        }
       }
 
       function setupThemeSelect() {
@@ -5099,16 +5456,33 @@
       });
 
       cloudLoadButton.addEventListener("click", () => {
-        showCloudFeatureNotReady("クラウド読み込み");
+        loadFromCloud();
       });
 
       cloudSaveButton.addEventListener("click", () => {
-        showCloudFeatureNotReady("クラウド保存");
+        saveLocal();
+        saveToCloud();
       });
 
       onAuthStateChanged(auth, (user) => {
         cloudUser = user;
-        updateCloudSyncMenu();
+
+        if (!cloudUser) {
+          localCloudRevision = 0;
+
+          if (unsubscribeCloudSave) {
+            unsubscribeCloudSave();
+            unsubscribeCloudSave = null;
+          }
+
+          updateCloudSyncMenu();
+          return;
+        }
+
+        localCloudRevision = loadCloudMeta(cloudUser.uid);
+        updateCloudSyncMenu(`ログイン済みです / revision ${localCloudRevision}`);
+        startCloudSaveListener(cloudUser);
+        checkCloudSaveOnStartup(cloudUser);
       });
 
       themeSelect.addEventListener("change", () => {
